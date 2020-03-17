@@ -20,6 +20,10 @@ pub struct Revision {
 impl Revision {
     pub fn status(&self) -> StyledObject<&String> {
         let status = &self.fields.status.name;
+        return Self::get_style(status).apply_to(status);
+    }
+
+    fn get_style(status: &String) -> Style {
         let style = if status.eq("Needs Review") {
             Style::new().bg(Color::Yellow).black()
         } else if status.eq("Accepted") {
@@ -31,7 +35,7 @@ impl Revision {
         } else {
             Style::new().bg(Color::Yellow).black()
         };
-        return style.apply_to(status);
+        return style.bold()
     }
 }
 
@@ -45,4 +49,55 @@ pub struct Fields {
 pub struct Status {
     pub name: String,
     pub closed: bool
+}
+
+#[cfg(test)]
+mod tests {
+
+    use super::*;
+
+    #[test]
+    fn test_status_colors_accepted() {
+        let revision = Revision { id : 1, fields : Fields {
+            title : String::from("Sample diff"),
+            status: Status {
+                name: String::from("Accepted"),
+                closed: false
+            }
+        }};
+
+        let styled_status = Revision::get_style(&revision.fields.status.name);
+        let expected_style = Style::new().bg(Color::Green).black().bold();
+        assert_eq!(expected_style, styled_status);
+    }
+
+    #[test]
+    fn test_status_colors_needs_revision() {
+        let revision = Revision { id : 1, fields : Fields {
+            title : String::from("Sample diff"),
+            status: Status {
+                name: String::from("Needs Revision"),
+                closed: false
+            }
+        }};
+
+        let styled_status = Revision::get_style(&revision.fields.status.name);
+        let expected_style = Style::new().bg(Color::Red).black().bold();
+        assert_eq!(expected_style, styled_status);
+    }
+
+    #[test]
+    fn test_status_colors_needs_review() {
+        let revision = Revision { id : 1, fields : Fields {
+            title : String::from("Sample diff"),
+            status: Status {
+                name: String::from("Needs Review"),
+                closed: false
+            }
+        }};
+
+        let styled_status = Revision::get_style(&revision.fields.status.name);
+        let expected_style = Style::new().bg(Color::Yellow).black().bold();
+        assert_eq!(expected_style, styled_status);
+    }
 }
