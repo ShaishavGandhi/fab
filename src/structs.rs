@@ -18,9 +18,14 @@ pub struct Revision {
 }
 
 impl Revision {
-    pub fn status(&self) -> StyledObject<&String> {
+
+    pub fn url(&self) -> StyledObject<String> {
+        return Style::new().bold().apply_to(format!("https://code.uberinternal.com/{}", &self.id))
+    }
+
+    pub fn status(&self) -> StyledObject<String> {
         let status = &self.fields.status.name;
-        return Self::get_style(status).apply_to(status);
+        return Self::get_style(status).apply_to(format!(" {} ", status));
     }
 
     fn get_style(status: &String) -> Style {
@@ -29,9 +34,9 @@ impl Revision {
         } else if status.eq("Accepted") {
             Style::new().bg(Color::Green).black()
         } else if status.eq("Needs Revision") {
-            Style::new().bg(Color::Red).black()
+            Style::new().bg(Color::Red).white()
         } else if status.eq("Changes Planned") {
-            Style::new().bg(Color::Magenta).black()
+            Style::new().bg(Color::Red).white()
         } else {
             Style::new().bg(Color::Yellow).black()
         };
@@ -82,7 +87,7 @@ mod tests {
         }};
 
         let styled_status = Revision::get_style(&revision.fields.status.name);
-        let expected_style = Style::new().bg(Color::Red).black().bold();
+        let expected_style = Style::new().bg(Color::Red).white().bold();
         assert_eq!(expected_style, styled_status);
     }
 

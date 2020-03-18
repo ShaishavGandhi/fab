@@ -21,6 +21,6 @@ pub fn process_diff_command(_matches: &ArgMatches) {
     let revisions: Vec<&Revision> = revision.iter().filter(|rev| !rev.fields.status.closed).collect();
 
     for revision in revisions {
-        println!("{} {} https://code.uberinternal.com/D{}", revision.status(), revision.fields.title, revision.id)
+        println!("{} {} {}", revision.status(), revision.fields.title, revision.url())
     }
 }
