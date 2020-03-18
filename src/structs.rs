@@ -30,7 +30,7 @@ impl Revision {
 
     fn get_style(status: &String) -> Style {
         let style = if status.eq("Needs Review") {
-            Style::new().bg(Color::Yellow).black()
+            Style::new().bg(Color::Magenta).white()
         } else if status.eq("Accepted") {
             Style::new().bg(Color::Green).black()
         } else if status.eq("Needs Revision") {
@@ -102,7 +102,7 @@ mod tests {
         }};
 
         let styled_status = Revision::get_style(&revision.fields.status.name);
-        let expected_style = Style::new().bg(Color::Yellow).black().bold();
+        let expected_style = Style::new().bg(Color::Magenta).white().bold();
         assert_eq!(expected_style, styled_status);
     }
 }
