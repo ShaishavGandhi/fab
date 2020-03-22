@@ -1,5 +1,5 @@
 use serde::{Deserialize, Serialize};
-use console::{Style, Color, StyledObject};
+use comfy_table::Color;
 
 #[derive(Deserialize, Serialize, Debug)]
 pub struct FabConfig {
@@ -38,28 +38,38 @@ pub struct Revision {
 
 impl Revision {
 
-    pub fn url(&self, config: &FabConfig) -> StyledObject<String> {
-        return Style::new().bold().apply_to(format!("{}{}", &config.hosted_instance, &self.id))
+    pub fn url(&self, config: &FabConfig) -> String {
+        return format!("{}D{}", &config.hosted_instance, &self.id)
     }
 
-    pub fn status(&self) -> StyledObject<String> {
+    pub fn get_background(&self) -> Color {
         let status = &self.fields.status.name;
-        return Self::get_style(status).apply_to(format!(" {} ", status));
+        return if status.eq("Needs Review") {
+            Color::Magenta
+        } else if status.eq("Accepted") {
+            Color::Green
+        } else if status.eq("Needs Revision") {
+            Color::Red
+        } else if status.eq("Changes Planned") {
+            Color::Red
+        } else {
+            Color::Yellow
+        };
     }
 
-    fn get_style(status: &String) -> Style {
-        let style = if status.eq("Needs Review") {
-            Style::new().bg(Color::Magenta).white()
+    pub fn get_foreground(&self) -> Color {
+        let status = &self.fields.status.name;
+        return if status.eq("Needs Review") {
+            Color::White
         } else if status.eq("Accepted") {
-            Style::new().bg(Color::Green).black()
+            Color::Black
         } else if status.eq("Needs Revision") {
-            Style::new().bg(Color::Red).white()
+            Color::White
         } else if status.eq("Changes Planned") {
-            Style::new().bg(Color::Red).white()
+            Color::White
         } else {
-            Style::new().bg(Color::Yellow).black()
+            Color::Black
         };
-        return style.bold()
     }
 }
 
@@ -81,7 +91,7 @@ mod tests {
     use super::*;
 
     #[test]
-    fn test_status_colors_accepted() {
+    fn test_get_foreground_background_accepted() {
         let revision = Revision { id : 1, fields : Fields {
             title : String::from("Sample diff"),
             status: Status {
@@ -90,13 +100,12 @@ mod tests {
             }
         }};
 
-        let styled_status = Revision::get_style(&revision.fields.status.name);
-        let expected_style = Style::new().bg(Color::Green).black().bold();
-        assert_eq!(expected_style, styled_status);
+        assert_eq!(Color::Green, revision.get_background());
+        assert_eq!(Color::Black, revision.get_foreground());
     }
 
     #[test]
-    fn test_status_colors_needs_revision() {
+    fn test_get_foreground_background_needs_revision() {
         let revision = Revision { id : 1, fields : Fields {
             title : String::from("Sample diff"),
             status: Status {
@@ -105,9 +114,8 @@ mod tests {
             }
         }};
 
-        let styled_status = Revision::get_style(&revision.fields.status.name);
-        let expected_style = Style::new().bg(Color::Red).white().bold();
-        assert_eq!(expected_style, styled_status);
+        assert_eq!(Color::Red, revision.get_background());
+        assert_eq!(Color::White, revision.get_foreground());
     }
 
     #[test]
@@ -120,8 +128,7 @@ mod tests {
             }
         }};
 
-        let styled_status = Revision::get_style(&revision.fields.status.name);
-        let expected_style = Style::new().bg(Color::Magenta).white().bold();
-        assert_eq!(expected_style, styled_status);
+        assert_eq!(Color::Magenta, revision.get_background());
+        assert_eq!(Color::White, revision.get_foreground());
     }
 }
