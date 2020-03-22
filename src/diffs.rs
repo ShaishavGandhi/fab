@@ -1,17 +1,18 @@
-use crate::structs::{Revision, RevisionResponse};
+use crate::structs::{Revision, RevisionResponse, PhabConfig};
 use clap::ArgMatches;
 
-const DIFFERENTIAL_SEARCH_URL: &str = "https://code.uberinternal.com/api/differential.revision.search";
+const DIFFERENTIAL_SEARCH_URL: &str = "api/differential.revision.search";
 
-pub fn process_diff_command(_matches: &ArgMatches) {
+pub fn process_diff_command(_matches: &ArgMatches, config: &PhabConfig) {
     let json_body = json!({
             "queryKey": "authored",
-            "api.token": "cli-lsmimleim4ohaovkxj23xcnrgoc6",
+            "api.token": config.api_token,
         });
 
 
+    let url = format!("{}{}", &config.hosted_instance, DIFFERENTIAL_SEARCH_URL.to_string());
     let response = reqwest::blocking::Client::new()
-        .post(DIFFERENTIAL_SEARCH_URL)
+        .post(&url)
         .form(&json_body)
         .send()
         .unwrap();
@@ -21,6 +22,6 @@ pub fn process_diff_command(_matches: &ArgMatches) {
     let revisions: Vec<&Revision> = revision.iter().filter(|rev| !rev.fields.status.closed).collect();
 
     for revision in revisions {
-        println!("{} {} {}", revision.status(), revision.fields.title, revision.url())
+        println!("{} {} {}", revision.status(), revision.fields.title, revision.url(config))
     }
 }

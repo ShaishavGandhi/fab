@@ -1,6 +1,12 @@
 use serde::{Deserialize};
 use console::{Style, Color, StyledObject};
 
+#[derive(Debug)]
+pub struct PhabConfig {
+    pub hosted_instance: String,
+    pub api_token: String,
+}
+
 #[derive(Deserialize, Debug)]
 pub struct RevisionResponse {
     pub result: RevisionData,
@@ -19,8 +25,8 @@ pub struct Revision {
 
 impl Revision {
 
-    pub fn url(&self) -> StyledObject<String> {
-        return Style::new().bold().apply_to(format!("https://code.uberinternal.com/{}", &self.id))
+    pub fn url(&self, config: &PhabConfig) -> StyledObject<String> {
+        return Style::new().bold().apply_to(format!("{}{}", &config.hosted_instance, &self.id))
     }
 
     pub fn status(&self) -> StyledObject<String> {
