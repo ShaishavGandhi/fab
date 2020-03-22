@@ -1,10 +1,11 @@
-use serde::{Deserialize};
+use serde::{Deserialize, Serialize};
 use console::{Style, Color, StyledObject};
 
-#[derive(Debug)]
+#[derive(Deserialize, Serialize, Debug)]
 pub struct FabConfig {
     pub hosted_instance: String,
     pub api_token: String,
+    pub phid: String
 }
 
 #[derive(Deserialize, Debug)]
@@ -15,6 +16,18 @@ pub struct RevisionResponse {
 #[derive(Deserialize, Debug)]
 pub struct RevisionData {
     pub data: Vec<Revision>
+}
+
+#[derive(Deserialize, Debug)]
+pub struct WhoAmIResponse {
+    pub result: UserResponse
+}
+
+#[derive(Deserialize, Debug)]
+pub struct UserResponse {
+    pub phid: String,
+    #[serde(rename = "userName")]
+    pub user_ame: String
 }
 
 #[derive(Deserialize, Debug)]
