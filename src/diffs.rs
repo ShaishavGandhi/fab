@@ -1,9 +1,9 @@
-use crate::structs::{Revision, RevisionResponse, PhabConfig};
+use crate::structs::{Revision, RevisionResponse, FabConfig};
 use clap::ArgMatches;
 
 const DIFFERENTIAL_SEARCH_URL: &str = "api/differential.revision.search";
 
-pub fn process_diff_command(_matches: &ArgMatches, config: &PhabConfig) {
+pub fn process_diff_command(_matches: &ArgMatches, config: &FabConfig) {
     let json_body = json!({
             "queryKey": "authored",
             "api.token": config.api_token,

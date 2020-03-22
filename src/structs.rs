@@ -2,7 +2,7 @@ use serde::{Deserialize};
 use console::{Style, Color, StyledObject};
 
 #[derive(Debug)]
-pub struct PhabConfig {
+pub struct FabConfig {
     pub hosted_instance: String,
     pub api_token: String,
 }
@@ -25,7 +25,7 @@ pub struct Revision {
 
 impl Revision {
 
-    pub fn url(&self, config: &PhabConfig) -> StyledObject<String> {
+    pub fn url(&self, config: &FabConfig) -> StyledObject<String> {
         return Style::new().bold().apply_to(format!("{}{}", &config.hosted_instance, &self.id))
     }
 

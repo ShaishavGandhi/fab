@@ -6,13 +6,13 @@ use clap;
 use clap::{App, SubCommand};
 use std::fs::read_to_string;
 use std::io;
-use crate::structs::PhabConfig;
+use crate::structs::FabConfig;
 
 mod structs;
 mod diffs;
 
 fn main() {
-    let matches = App::new("Phab")
+    let matches = App::new("Fab")
         .author("Shaishav <shaishavgandhi05@gmail.com>")
         .version("0.1.0")
         .subcommand(SubCommand::with_name("diff")
@@ -32,10 +32,10 @@ fn main() {
     }
 }
 
-fn init() -> Result<PhabConfig, &'static str>{
-    let contents = read_to_string("~/.phab/config");
+fn init() -> Result<FabConfig, &'static str>{
+    let contents = read_to_string("~/.fab/config");
     if contents.is_err() {
-        println!("Welcome to Phab! Let's get your started");
+        println!("Welcome to Fab! Let's get you started");
 
         println!("Enter the URL where your Phabricator instance is hosted. Example: https://phab.mycompany.com/");
         let mut hosted_instance = String::new();
@@ -70,11 +70,11 @@ fn init() -> Result<PhabConfig, &'static str>{
             return Result::Err("API Token cannot be null");
         }
 
-        return Result::Ok(PhabConfig {
+        return Result::Ok(FabConfig {
             hosted_instance,
             api_token
         })
     }
 
-    return Result::Err("Couldn't initialize phab");
+    return Result::Err("Couldn't initialize fab");
 }
