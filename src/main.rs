@@ -3,7 +3,7 @@
 extern crate serde_json;
 
 use clap;
-use clap::{App, SubCommand};
+use clap::{App, SubCommand, Arg};
 use std::fs::{read_to_string, File};
 use std::{io, fs};
 use crate::structs::{FabConfig, WhoAmIResponse};
@@ -17,10 +17,14 @@ fn main() {
     let matches = App::new("Fab")
         .author("Shaishav <shaishavgandhi05@gmail.com>")
         .version("0.1.0")
-        .subcommand(SubCommand::with_name("diff")
+        .subcommand(SubCommand::with_name("diffs")
             .version("0.1.0")
-            .author("Shaishav <shaishavgandhi05@gmail.com>"))
-        .get_matches();
+            .author("Shaishav <shaishavgandhi05@gmail.com>")
+            .arg(Arg::with_name("needs-review")
+                .short("n")
+                .long("needs-review")
+                .help("Show diffs that need your review"))
+        ).get_matches();
 
     let result = init();
     let config = match result {
@@ -29,7 +33,7 @@ fn main() {
     };
 
 
-    if let Some(matches) = matches.subcommand_matches("diff") {
+    if let Some(matches) = matches.subcommand_matches("diffs") {
         diffs::process_diff_command(matches, &config)
     }
 }
