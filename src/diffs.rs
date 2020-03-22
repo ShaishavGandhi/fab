@@ -1,5 +1,7 @@
 use crate::structs::{Revision, RevisionResponse, FabConfig};
 use clap::ArgMatches;
+use comfy_table::{Table, Cell, ContentArrangement, TableComponent, Attribute, CellAlignment};
+use comfy_table::presets::UTF8_FULL;
 
 const DIFFERENTIAL_SEARCH_URL: &str = "api/differential.revision.search";
 
@@ -50,7 +52,40 @@ fn process_diffs_needs_review(config: &FabConfig) {
 }
 
 fn render_diffs(config: &FabConfig, revisions: &Vec<&Revision>) {
+    let mut table = Table::new();
+
+    table
+        .load_preset(UTF8_FULL)
+        .set_content_arrangement(ContentArrangement::Dynamic)
+        .set_style(TableComponent::BottomBorder, ' ')
+        .set_style(TableComponent::TopBorder, ' ')
+        .set_style(TableComponent::LeftBorder, ' ')
+        .set_style(TableComponent::RightBorder, ' ')
+        .set_style(TableComponent::HorizontalLines, ' ')
+        .set_style(TableComponent::VerticalLines, ' ')
+        .set_style(TableComponent::BottomBorderIntersections, ' ')
+        .set_style(TableComponent::LeftBorderIntersections, ' ')
+        .set_style(TableComponent::RightBorderIntersections, ' ')
+        .set_style(TableComponent::TopBorderIntersections, ' ')
+        .set_style(TableComponent::MiddleIntersections, ' ')
+        .set_style(TableComponent::RightHeaderIntersection, ' ')
+        .set_style(TableComponent::LeftHeaderIntersection, ' ')
+        .set_style(TableComponent::TopLeftCorner, ' ')
+        .set_style(TableComponent::TopRightCorner, ' ')
+        .set_style(TableComponent::BottomLeftCorner, ' ')
+        .set_style(TableComponent::BottomRightCorner, ' ');
+
     for revision in revisions {
-        println!("{} {} {}", revision.status(), revision.fields.title, revision.url(config))
+        table.add_row(vec![
+            Cell::new(&revision.fields.status.name)
+                .bg(revision.get_background())
+                .fg(revision.get_foreground())
+                .set_alignment(CellAlignment::Center)
+                .add_attribute(Attribute::Bold),
+            Cell::new(&revision.fields.title),
+            Cell::new(&revision.url(config))
+                .add_attribute(Attribute::Bold)
+        ]);
     }
+    println!("{}", table);
 }
