@@ -3,6 +3,7 @@ use serde::{Deserialize};
 use crate::structs::FabConfig;
 use comfy_table::{Table, ContentArrangement, TableComponent, Cell, CellAlignment, Attribute, Color};
 use comfy_table::presets::UTF8_FULL;
+use crate::NO_BORDER_PRESET;
 
 const MANIPHEST_SEARCH: &str = "api/maniphest.search";
 
@@ -45,25 +46,9 @@ fn render_tasks(tasks: &Vec<Maniphest>, config: &FabConfig) {
     let mut table = Table::new();
 
     table
-        .load_preset(UTF8_FULL)
-        .set_content_arrangement(ContentArrangement::Dynamic)
-        .set_style(TableComponent::BottomBorder, ' ')
-        .set_style(TableComponent::TopBorder, ' ')
-        .set_style(TableComponent::LeftBorder, ' ')
-        .set_style(TableComponent::RightBorder, ' ')
-        .set_style(TableComponent::HorizontalLines, ' ')
-        .set_style(TableComponent::VerticalLines, ' ')
-        .set_style(TableComponent::BottomBorderIntersections, ' ')
-        .set_style(TableComponent::LeftBorderIntersections, ' ')
-        .set_style(TableComponent::RightBorderIntersections, ' ')
-        .set_style(TableComponent::TopBorderIntersections, ' ')
-        .set_style(TableComponent::MiddleIntersections, ' ')
-        .set_style(TableComponent::RightHeaderIntersection, ' ')
-        .set_style(TableComponent::LeftHeaderIntersection, ' ')
-        .set_style(TableComponent::TopLeftCorner, ' ')
-        .set_style(TableComponent::TopRightCorner, ' ')
-        .set_style(TableComponent::BottomLeftCorner, ' ')
-        .set_style(TableComponent::BottomRightCorner, ' ');
+        .load_preset(NO_BORDER_PRESET)
+        .set_content_arrangement(ContentArrangement::Dynamic);
+
 
     for task in tasks {
         table.add_row(vec![

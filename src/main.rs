@@ -13,6 +13,8 @@ mod diffs;
 mod tasks;
 
 const WHO_AM_I: &str = "api/user.whoami";
+/// Preset for comfy-table so that it styles the table for no borders
+const NO_BORDER_PRESET: &str = "                     ";
 
 fn main() {
     let matches = App::new("Fab")
