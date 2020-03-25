@@ -21,6 +21,7 @@ fn main() {
         .subcommand(SubCommand::with_name("diffs")
             .version("0.1.0")
             .author("Shaishav <shaishavgandhi05@gmail.com>")
+            .about("Commands related to your differential revisions")
             .arg(Arg::with_name("needs-review")
                 .short("n")
                 .long("needs-review")
