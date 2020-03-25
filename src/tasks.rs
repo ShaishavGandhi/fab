@@ -158,3 +158,155 @@ impl Priority {
         }
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_get_value_for_name() {
+        let priority = "unbreak-now";
+        assert_eq!(100, Priority::get_value_for_name(&priority.to_string()).unwrap_or(-1));
+
+        let priority = "high";
+        assert_eq!(80, Priority::get_value_for_name(&priority.to_string()).unwrap_or(80));
+
+        let priority = "needs-triage";
+        assert_eq!(90, Priority::get_value_for_name(&priority.to_string()).unwrap_or(90));
+
+        let priority = "normal";
+        assert_eq!(50, Priority::get_value_for_name(&priority.to_string()).unwrap_or(50));
+
+        let priority = "low";
+        assert_eq!(25, Priority::get_value_for_name(&priority.to_string()).unwrap_or(25));
+
+        let priority = "wishlist";
+        assert_eq!(0, Priority::get_value_for_name(&priority.to_string()).unwrap_or(0));
+    }
+
+    #[test]
+    fn maniphest_get_colo_unbreak_now() {
+        let maniphest = Maniphest {
+            id: 32,
+            fields: Fields {
+                name: String::from("Name of the task"),
+                status: Status {
+                    name: String::from("open"),
+                    value: String::from("Open")
+                },
+                priority: Priority {
+                    value: 100,
+                    name: String::from("Unbreak Now")
+                }
+            }
+        };
+
+        assert_eq!(Color::Red, maniphest.get_background());
+        assert_eq!(Color::White, maniphest.get_foreground());
+    }
+
+    #[test]
+    fn maniphest_get_colo_high() {
+        let maniphest = Maniphest {
+            id: 32,
+            fields: Fields {
+                name: String::from("Name of the task"),
+                status: Status {
+                    name: String::from("open"),
+                    value: String::from("Open")
+                },
+                priority: Priority {
+                    value: 80,
+                    name: String::from("High")
+                }
+            }
+        };
+
+        assert_eq!(Color::DarkRed, maniphest.get_background());
+        assert_eq!(Color::White, maniphest.get_foreground());
+    }
+
+    #[test]
+    fn maniphest_get_color_needs_triage() {
+        let maniphest = Maniphest {
+            id: 32,
+            fields: Fields {
+                name: String::from("Name of the task"),
+                status: Status {
+                    name: String::from("open"),
+                    value: String::from("Open")
+                },
+                priority: Priority {
+                    value: 90,
+                    name: String::from("Needs Triage")
+                }
+            }
+        };
+
+        assert_eq!(Color::Magenta, maniphest.get_background());
+        assert_eq!(Color::White, maniphest.get_foreground());
+    }
+
+    #[test]
+    fn maniphest_get_color_normal() {
+        let maniphest = Maniphest {
+            id: 32,
+            fields: Fields {
+                name: String::from("Name of the task"),
+                status: Status {
+                    name: String::from("open"),
+                    value: String::from("Open")
+                },
+                priority: Priority {
+                    value: 50,
+                    name: String::from("Normal")
+                }
+            }
+        };
+
+        assert_eq!(Color::DarkYellow, maniphest.get_background());
+        assert_eq!(Color::Black, maniphest.get_foreground());
+    }
+
+    #[test]
+    fn maniphest_get_color_low() {
+        let maniphest = Maniphest {
+            id: 32,
+            fields: Fields {
+                name: String::from("Name of the task"),
+                status: Status {
+                    name: String::from("open"),
+                    value: String::from("Open")
+                },
+                priority: Priority {
+                    value: 25,
+                    name: String::from("Low")
+                }
+            }
+        };
+
+        assert_eq!(Color::Yellow, maniphest.get_background());
+        assert_eq!(Color::Black, maniphest.get_foreground());
+    }
+
+    #[test]
+    fn maniphest_get_color_wishlist() {
+        let maniphest = Maniphest {
+            id: 32,
+            fields: Fields {
+                name: String::from("Name of the task"),
+                status: Status {
+                    name: String::from("open"),
+                    value: String::from("Open")
+                },
+                priority: Priority {
+                    value: 0,
+                    name: String::from("Wishlist")
+                }
+            }
+        };
+
+        assert_eq!(Color::Cyan, maniphest.get_background());
+        assert_eq!(Color::Black, maniphest.get_foreground());
+    }
+}
