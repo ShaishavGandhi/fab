@@ -33,6 +33,7 @@ fn main() {
                 .arg(Arg::with_name("priority")
                     .short("p")
                     .long("priority")
+                    .possible_values(&["unbreak-now", "needs-triage", "high", "normal", "low", "wishlist"])
                     .help("Specify the priority of the task")
                     .default_value("high"))
             )
