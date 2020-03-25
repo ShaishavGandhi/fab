@@ -13,14 +13,16 @@ pub fn process_task_command(matches: &ArgMatches, config: &FabConfig) {
 }
 
 fn process_list_tasks(matches: &ArgMatches, config: &FabConfig) {
-    let priority_pption = matches.value_of("priority").unwrap_or("high");
-    let priority = Priority::get_value_for_name(&priority_pption.to_string())
+    let limit = matches.value_of("limit").expect("No limit specified for query");
+    let priority_option = matches.value_of("priority").unwrap_or("high");
+    let priority = Priority::get_value_for_name(&priority_option.to_string())
         .expect("Couldn't parse priority. Must be one of ['unbreak-now', 'needs-triage', 'high', 'normal', 'low', 'wishlist']");
 
     let json_body = json!({
         "queryKey": "assigned",
         "constraints[priorities][0]": format!("{}", priority),
-        "api.token": config.api_token
+        "api.token": config.api_token,
+        "limit": limit
     });
 
     let url = format!("{}{}", &config.hosted_instance, MANIPHEST_SEARCH);

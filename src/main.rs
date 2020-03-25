@@ -36,6 +36,11 @@ fn main() {
                     .possible_values(&["unbreak-now", "needs-triage", "high", "normal", "low", "wishlist"])
                     .help("Specify the priority of the task")
                     .default_value("high"))
+                .arg(Arg::with_name("limit")
+                    .short("l")
+                    .long("limit")
+                    .help("limit results by a value")
+                    .default_value("20"))
             )
         ).get_matches();
 
