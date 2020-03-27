@@ -44,32 +44,28 @@ impl Revision {
 
     pub fn get_background(&self) -> Color {
         let status = &self.fields.status.name;
-        return if status.eq("Needs Review") {
+        if status.eq("Needs Review") {
             Color::Magenta
         } else if status.eq("Accepted") {
             Color::Green
-        } else if status.eq("Needs Revision") {
-            Color::Red
-        } else if status.eq("Changes Planned") {
+        } else if status.eq("Needs Revision") || status.eq("Changes Planned") {
             Color::Red
         } else {
             Color::Yellow
-        };
+        }
     }
 
     pub fn get_foreground(&self) -> Color {
         let status = &self.fields.status.name;
-        return if status.eq("Needs Review") {
+        if status.eq("Needs Review") {
             Color::White
         } else if status.eq("Accepted") {
             Color::Black
-        } else if status.eq("Needs Revision") {
-            Color::White
-        } else if status.eq("Changes Planned") {
+        } else if status.eq("Needs Revision") || status.eq("Changes Planned") {
             Color::White
         } else {
             Color::Black
-        };
+        }
     }
 }
 
