@@ -8,15 +8,13 @@ use crate::NO_BORDER_PRESET;
 const MANIPHEST_SEARCH: &str = "api/maniphest.search";
 
 pub fn process_task_command(matches: &ArgMatches, config: &FabConfig) {
-    if let Some(matches) = matches.subcommand_matches("list") {
-        process_list_tasks(matches, config)
-    }
+    process_list_tasks(matches, config)
 }
 
 fn process_list_tasks(matches: &ArgMatches, config: &FabConfig) {
     let limit = matches.value_of("limit").expect("No limit specified for query");
-    let priority_option = matches.value_of("priority").unwrap_or("high");
-    let priority = Priority::get_value_for_name(&priority_option.to_string())
+    let priority = matches.value_of("priority").unwrap_or("high");
+    let priority = Priority::get_value_for_name(&priority.to_string())
         .expect("Couldn't parse priority. Must be one of ['unbreak-now', 'needs-triage', 'high', 'normal', 'low', 'wishlist']");
 
     let json_body = json!({
