@@ -1,7 +1,6 @@
 use crate::structs::{Revision, RevisionResponse, FabConfig};
 use clap::ArgMatches;
-use comfy_table::{Table, Cell, ContentArrangement, TableComponent, Attribute, CellAlignment};
-use comfy_table::presets::UTF8_FULL;
+use comfy_table::{Table, Cell, ContentArrangement, Attribute, CellAlignment};
 use crate::NO_BORDER_PRESET;
 
 const DIFFERENTIAL_SEARCH_URL: &str = "api/differential.revision.search";

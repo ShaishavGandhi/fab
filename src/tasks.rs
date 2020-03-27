@@ -1,8 +1,7 @@
 use clap::ArgMatches;
 use serde::{Deserialize};
 use crate::structs::FabConfig;
-use comfy_table::{Table, ContentArrangement, TableComponent, Cell, CellAlignment, Attribute, Color};
-use comfy_table::presets::UTF8_FULL;
+use comfy_table::{Table, ContentArrangement, Cell, CellAlignment, Attribute, Color};
 use crate::NO_BORDER_PRESET;
 
 const MANIPHEST_SEARCH: &str = "api/maniphest.search";
@@ -40,7 +39,7 @@ fn process_list_tasks(matches: &ArgMatches, config: &FabConfig) {
     render_tasks(&tasks, config)
 }
 
-fn render_tasks(tasks: &Vec<Maniphest>, config: &FabConfig) {
+fn render_tasks(tasks: &[Maniphest], config: &FabConfig) {
     let mut table = Table::new();
 
     table
@@ -86,7 +85,7 @@ impl Maniphest {
 
     fn get_background(&self) -> Color {
         let priority = &self.fields.priority.value;
-        return match priority {
+        match priority {
             100 => Color::Red,
             90 => Color::Magenta,
             80 => Color::DarkRed,
@@ -99,7 +98,7 @@ impl Maniphest {
 
     fn get_foreground(&self) -> Color {
         let priority = &self.fields.priority.value;
-        return match priority {
+        match priority {
             100 => Color::White,
             90 => Color::White,
             80 => Color::White,
@@ -131,8 +130,8 @@ struct Priority {
 }
 
 impl Priority {
-    pub fn get_value_for_name(name: &String) -> Result<i32, &str> {
-        return match name.trim() {
+    pub fn get_value_for_name(name: &str) -> Result<i32, &str> {
+        match name.trim() {
             "unbreak-now" => Result::Ok(100),
             "needs-triage" => Result::Ok(90),
             "high" => Result::Ok(80),

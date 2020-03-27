@@ -68,7 +68,7 @@ fn init() -> Result<FabConfig, &'static str> {
     let config_file = format!("{}/.fab/config.json", home_dir);
 
     let contents = read_to_string(&config_file);
-    return match contents {
+    match contents {
         Err(_message) => {
             println!("Welcome to Fab! Let's get you started");
 
@@ -117,7 +117,7 @@ fn init() -> Result<FabConfig, &'static str> {
                 phid
             };
 
-            fs::create_dir_all(&fab_dir).expect(&format!("Couldn't create directory '{}'", &fab_dir));
+            fs::create_dir_all(&fab_dir).unwrap_or_else(|_| panic!("Couldn't create directory '{}'", &fab_dir));
             serde_json::to_writer(&File::create(config_file).expect("Couldn't load file"), &config).expect("Couldn't write config to file");
 
             Result::Ok(config)
@@ -129,7 +129,7 @@ fn init() -> Result<FabConfig, &'static str> {
     }
 }
 
-fn get_phid(hosted_instance: &String, api_token: &String) -> Result<String, &'static str> {
+fn get_phid(hosted_instance: &str, api_token: &str) -> Result<String, &'static str> {
     let url = format!("{}{}", hosted_instance, WHO_AM_I);
     let json_body = json!({
             "api.token": api_token
@@ -141,7 +141,7 @@ fn get_phid(hosted_instance: &String, api_token: &String) -> Result<String, &'st
         .send()
         .expect("Error fetching user details");
 
-    return match response.json::<WhoAmIResponse>() {
+    match response.json::<WhoAmIResponse>() {
         Ok(res) => Result::Ok(res.result.phid),
         Err(_message) => Result::Err("Error getting user's phabricator ID")
     }
