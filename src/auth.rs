@@ -11,8 +11,14 @@ pub fn init() -> Result<FabConfig, String> {
     match existing_config {
         Ok(config) => Result::Ok(config),
         Err(_) => {
-            println!("Welcome to Fab! Let's get you started");
+            println!(" _    _      _                            _         ______    _
+| |  | |    | |                          | |        |  ___|  | |
+| |  | | ___| | ___ ___  _ __ ___   ___  | |_ ___   | |_ __ _| |__
+| |/\\| |/ _ \\ |/ __/ _ \\| '_ ` _ \\ / _ \\ | __/ _ \\  |  _/ _` | '_ \\
+\\  /\\  /  __/ | (_| (_) | | | | | |  __/ | || (_) | | || (_| | |_) |
+ \\/  \\/ \\___|_|\\___\\___/|_| |_| |_|\\___|  \\__\\___/  \\_| \\__,_|_.__/");
 
+            println!("Let's get you started!");
             println!("Enter the URL where your Phabricator instance is hosted. Example: https://phab.mycompany.com/");
 
             let hosted_instance = prompt_hosted_instance();
