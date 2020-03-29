@@ -1,4 +1,4 @@
-use crate::structs::{Revision, RevisionResponse, FabConfig, RevisionData};
+use crate::structs::{Revision, FabConfig, RevisionData};
 use clap::ArgMatches;
 use comfy_table::{Table, Cell, ContentArrangement, Attribute, CellAlignment};
 use crate::NO_BORDER_PRESET;
@@ -37,15 +37,12 @@ fn process_diffs_needs_review(config: &FabConfig) {
 
     let url = format!("{}{}", config.hosted_instance, DIFFERENTIAL_SEARCH_URL);
 
-    let response = reqwest::blocking::Client::new()
+    let response = auth::send::<RevisionData>(config, reqwest::blocking::Client::new()
         .post(&url)
-        .form(&json_body)
-        .send()
-        .expect("Failed to fetch response for needs-review diffs")
-        .json::<RevisionResponse>()
-        .expect("Failed to deserialize diffs");
+        .form(&json_body))
+        .expect("Failed to fetch response for needs-review diffs");
 
-    let revisions = response.result.data.iter().filter(|rev| !rev.fields.status.closed).collect();
+    let revisions = response.data.iter().filter(|rev| !rev.fields.status.closed).collect();
     render_diffs(config, &revisions)
 
 }

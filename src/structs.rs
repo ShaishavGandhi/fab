@@ -9,11 +9,6 @@ pub struct FabConfig {
 }
 
 #[derive(Deserialize, Serialize, Debug)]
-pub struct RevisionResponse {
-    pub result: RevisionData,
-}
-
-#[derive(Deserialize, Serialize, Debug)]
 pub struct RevisionData {
     pub data: Vec<Revision>
 }

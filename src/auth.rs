@@ -1,6 +1,6 @@
-use crate::network::NetworkResponse;
 use reqwest::blocking::RequestBuilder;
 use std::{io, fs};
+use serde::{Deserialize};
 use crate::structs::{FabConfig, WhoAmIResponse};
 use std::fs::{read_to_string, File};
 use crate::WHO_AM_I;
@@ -63,7 +63,6 @@ pub fn send<T: serde::de::DeserializeOwned>(config: &FabConfig, request: Request
     } else if response.error_code.is_some() {
         let error_code: String = response.error_code.unwrap();
 
-        println!("{}", error_code);
         if error_code.eq("ERR-INVALID-AUTH") || error_code.eq("ERR-INVALID-SESSION") {
             println!("Your API Token has expired.");
             let current_config = read_config().expect("Couldn't find existing config file");
@@ -82,7 +81,7 @@ pub fn send<T: serde::de::DeserializeOwned>(config: &FabConfig, request: Request
             }
         }
     }
-    Result::Err(String::from("Couldn't authenticate request"))
+    Result::Err(String::from("Token regenerated. Please try the command again"))
 }
 
 /// Prompts for a token and writes the token to the configuration file.
@@ -175,3 +174,8 @@ fn get_phid(hosted_instance: &str, api_token: &str) -> Result<String, String> {
     }
 }
 
+#[derive(Deserialize, Debug)]
+struct NetworkResponse<T> {
+    pub error_code: Option<String>,
+    pub result: Option<T>
+}
