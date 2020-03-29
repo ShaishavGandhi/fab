@@ -8,29 +8,24 @@ pub struct FabConfig {
     pub phid: String
 }
 
-#[derive(Deserialize, Debug)]
-pub struct RevisionResponse {
-    pub result: RevisionData,
-}
-
-#[derive(Deserialize, Debug)]
+#[derive(Deserialize, Serialize, Debug)]
 pub struct RevisionData {
     pub data: Vec<Revision>
 }
 
-#[derive(Deserialize, Debug)]
+#[derive(Deserialize, Serialize, Debug)]
 pub struct WhoAmIResponse {
     pub result: UserResponse
 }
 
-#[derive(Deserialize, Debug)]
+#[derive(Deserialize, Serialize, Debug)]
 pub struct UserResponse {
     pub phid: String,
     #[serde(rename = "userName")]
     pub user_ame: String
 }
 
-#[derive(Deserialize, Debug)]
+#[derive(Deserialize, Serialize, Debug)]
 pub struct Revision {
     pub id: i32,
     pub fields: Fields
@@ -69,13 +64,13 @@ impl Revision {
     }
 }
 
-#[derive(Deserialize, Debug)]
+#[derive(Deserialize, Serialize, Debug)]
 pub struct Fields {
     pub title: String,
     pub status: Status
 }
 
-#[derive(Deserialize, Debug)]
+#[derive(Deserialize, Serialize, Debug)]
 pub struct Status {
     pub name: String,
     pub closed: bool

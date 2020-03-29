@@ -2,7 +2,7 @@ use clap::ArgMatches;
 use serde::{Deserialize};
 use crate::structs::FabConfig;
 use comfy_table::{Table, ContentArrangement, Cell, CellAlignment, Attribute, Color};
-use crate::NO_BORDER_PRESET;
+use crate::{NO_BORDER_PRESET, auth};
 
 const MANIPHEST_SEARCH: &str = "api/maniphest.search";
 
@@ -25,14 +25,10 @@ fn process_list_tasks(matches: &ArgMatches, config: &FabConfig) {
 
     let url = format!("{}{}", &config.hosted_instance, MANIPHEST_SEARCH);
 
-    let result = reqwest::blocking::Client::new()
+    let result = auth::send::<ManiphestSearchData>(config, reqwest::blocking::Client::new()
         .post(&url)
-        .form(&json_body)
-        .send()
-        .expect("Error fetching tasks from Conduit")
-        .json::<ManiphestSearchResponse>()
-        .expect("Error deserializing JSON for search tasks")
-        .result;
+        .form(&json_body))
+        .expect("Error fetching tasks from Conduit");
 
 
     let tasks = result.data;
@@ -60,11 +56,6 @@ fn render_tasks(tasks: &[Maniphest], config: &FabConfig) {
     }
 
     println!("{}", table)
-}
-
-#[derive(Debug, Deserialize)]
-struct ManiphestSearchResponse {
-    result: ManiphestSearchData
 }
 
 #[derive(Debug, Deserialize)]

@@ -1,7 +1,8 @@
-use crate::structs::{Revision, RevisionResponse, FabConfig};
+use crate::structs::{Revision, FabConfig, RevisionData};
 use clap::ArgMatches;
 use comfy_table::{Table, Cell, ContentArrangement, Attribute, CellAlignment};
 use crate::NO_BORDER_PRESET;
+use crate::auth;
 
 const DIFFERENTIAL_SEARCH_URL: &str = "api/differential.revision.search";
 
@@ -17,17 +18,15 @@ pub fn process_diff_command(_matches: &ArgMatches, config: &FabConfig) {
         });
 
     let url = format!("{}{}", &config.hosted_instance, DIFFERENTIAL_SEARCH_URL.to_string());
-    let response = reqwest::blocking::Client::new()
+
+    let result = auth::send::<RevisionData>(config, reqwest::blocking::Client::new()
         .post(&url)
-        .form(&json_body)
-        .send()
-        .unwrap();
+        .form(&json_body))
+        .expect("Couldn't fetch diffs");
 
-    let revision: Vec<Revision> = (response.json::<RevisionResponse>()).unwrap().result.data;
+    let revisions: Vec<&Revision> = result.data.iter().filter(|rev| !rev.fields.status.closed).collect();
 
-    let revisions: Vec<&Revision> = revision.iter().filter(|rev| !rev.fields.status.closed).collect();
-
-    render_diffs(config, &revisions)
+    render_diffs(config, &revisions);
 }
 
 fn process_diffs_needs_review(config: &FabConfig) {
@@ -38,15 +37,12 @@ fn process_diffs_needs_review(config: &FabConfig) {
 
     let url = format!("{}{}", config.hosted_instance, DIFFERENTIAL_SEARCH_URL);
 
-    let response = reqwest::blocking::Client::new()
+    let response = auth::send::<RevisionData>(config, reqwest::blocking::Client::new()
         .post(&url)
-        .form(&json_body)
-        .send()
-        .expect("Failed to fetch response for needs-review diffs")
-        .json::<RevisionResponse>()
-        .expect("Failed to deserialize diffs");
+        .form(&json_body))
+        .expect("Failed to fetch response for needs-review diffs");
 
-    let revisions = response.result.data.iter().filter(|rev| !rev.fields.status.closed).collect();
+    let revisions = response.data.iter().filter(|rev| !rev.fields.status.closed).collect();
     render_diffs(config, &revisions)
 
 }
