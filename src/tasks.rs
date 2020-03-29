@@ -3,6 +3,7 @@ use serde::{Deserialize};
 use crate::structs::FabConfig;
 use comfy_table::{Table, ContentArrangement, Cell, CellAlignment, Attribute, Color};
 use crate::{NO_BORDER_PRESET, auth};
+use serde_json::{Map, Value};
 
 const MANIPHEST_SEARCH: &str = "api/maniphest.search";
 
@@ -12,16 +13,22 @@ pub fn process_task_command(matches: &ArgMatches, config: &FabConfig) {
 
 fn process_list_tasks(matches: &ArgMatches, config: &FabConfig) {
     let limit = matches.value_of("limit").expect("No limit specified for query");
-    let priority = matches.value_of("priority").unwrap_or("high");
-    let priority = Priority::get_value_for_name(&priority.to_string())
-        .expect("Couldn't parse priority. Must be one of ['unbreak-now', 'needs-triage', 'high', 'normal', 'low', 'wishlist']");
+    let priorities: Vec<_> = matches.values_of("priority")
+        .expect("Couldn't parse priority. Must be one of ['unbreak-now', 'needs-triage', 'high', 'normal', 'low', 'wishlist']")
+        .collect();
 
-    let json_body = json!({
-        "queryKey": "assigned",
-        "constraints[priorities][0]": format!("{}", priority),
-        "api.token": config.api_token,
-        "limit": limit
-    });
+    let priorities: Vec<i32> = priorities.iter().map(|priority| Priority::get_value_for_name(priority).unwrap()).collect();
+
+    let mut map = Map::new();
+    map.insert("queryKey".to_string(), Value::from("assigned"));
+    map.insert("api.token".to_string(), Value::from(config.api_token.clone()));
+    map.insert("limit".to_string(), Value::from(limit));
+
+    for (i, &priority) in priorities.iter().enumerate() {
+        map.insert(format!("constraints[priorities][{}]", i), Value::from(priority));
+    }
+
+    let json_body = Value::Object(map);
 
     let url = format!("{}{}", &config.hosted_instance, MANIPHEST_SEARCH);
 
