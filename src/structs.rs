@@ -22,7 +22,7 @@ pub struct WhoAmIResponse {
 pub struct UserResponse {
     pub phid: String,
     #[serde(rename = "userName")]
-    pub user_ame: String
+    pub user_name: String
 }
 
 #[derive(Deserialize, Serialize, Debug)]

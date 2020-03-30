@@ -9,6 +9,7 @@ mod diffs;
 mod tasks;
 mod network;
 mod auth;
+mod summary;
 
 const WHO_AM_I: &str = "api/user.whoami";
 /// Preset for comfy-table so that it styles the table for no borders
@@ -41,8 +42,12 @@ fn main() {
                 .short("l")
                 .long("limit")
                 .help("limit results by a value")
-                .default_value("20"))
-        ).get_matches();
+                .default_value("20")))
+        .subcommand(SubCommand::with_name("summary")
+            .about("Gives a snapshot of what is relevant to you in the moment")
+            .version("0.1.0")
+            .author("Shaishav <shaishavgandhi05@gmail.com>"))
+        .get_matches();
 
     let result = auth::init();
     let config = match result {
@@ -55,5 +60,7 @@ fn main() {
         diffs::process_diff_command(matches, &config)
     } else if let Some(matches) = matches.subcommand_matches("tasks") {
         tasks::process_task_command(matches, &config)
+    } else if let Some(matches) = matches.subcommand_matches("summary") {
+        summary::process_summary(matches, &config);
     }
 }
