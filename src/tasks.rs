@@ -11,14 +11,7 @@ pub fn process_task_command(matches: &ArgMatches, config: &FabConfig) {
     process_list_tasks(matches, config)
 }
 
-fn process_list_tasks(matches: &ArgMatches, config: &FabConfig) {
-    let limit = matches.value_of("limit").expect("No limit specified for query");
-    let priorities: Vec<_> = matches.values_of("priority")
-        .expect("Couldn't parse priority. Must be one of ['unbreak-now', 'needs-triage', 'high', 'normal', 'low', 'wishlist']")
-        .collect();
-
-    let priorities: Vec<i32> = priorities.iter().map(|priority| Priority::get_value_for_name(priority).unwrap()).collect();
-
+pub fn get_tasks(limit: &str, priorities: &[i32], config: &FabConfig) -> Result<Vec<Maniphest>, String> {
     let mut map = Map::new();
     map.insert("queryKey".to_string(), Value::from("assigned"));
     map.insert("api.token".to_string(), Value::from(config.api_token.clone()));
@@ -34,15 +27,17 @@ fn process_list_tasks(matches: &ArgMatches, config: &FabConfig) {
 
     let result = auth::send::<ManiphestSearchData>(config, reqwest::blocking::Client::new()
         .post(&url)
-        .form(&json_body))
-        .expect("Error fetching tasks from Conduit");
+        .form(&json_body));
 
-
-    let tasks = result.data;
-    render_tasks(&tasks, config)
+    match result {
+        Ok(response) => {
+            Result::Ok(response.data)
+        },
+        Err(_mess) => Result::Err(String::from("Error fetching tasks"))
+    }
 }
 
-fn render_tasks(tasks: &[Maniphest], config: &FabConfig) {
+pub fn render_tasks(tasks: &[Maniphest], config: &FabConfig) {
     let mut table = Table::new();
 
     table
@@ -65,13 +60,25 @@ fn render_tasks(tasks: &[Maniphest], config: &FabConfig) {
     println!("{}", table)
 }
 
+fn process_list_tasks(matches: &ArgMatches, config: &FabConfig) {
+    let limit = matches.value_of("limit").expect("No limit specified for query");
+    let priorities: Vec<_> = matches.values_of("priority")
+        .expect("Couldn't parse priority. Must be one of ['unbreak-now', 'needs-triage', 'high', 'normal', 'low', 'wishlist']")
+        .collect();
+
+    let priorities: Vec<i32> = priorities.iter().map(|priority| Priority::get_value_for_name(priority).unwrap()).collect();
+
+    let tasks = get_tasks(limit, &priorities, config).expect("Error fetching tasks");
+    render_tasks(&tasks, config)
+}
+
 #[derive(Debug, Deserialize)]
 struct ManiphestSearchData {
     data: Vec<Maniphest>
 }
 
 #[derive(Debug, Deserialize)]
-struct Maniphest {
+pub struct Maniphest {
     id: i32,
     fields: Fields
 }
@@ -109,20 +116,20 @@ impl Maniphest {
 }
 
 #[derive(Debug, Deserialize)]
-struct Fields {
+pub struct Fields {
     name: String,
     status: Status,
     priority: Priority
 }
 
 #[derive(Debug, Deserialize)]
-struct Status {
+pub struct Status {
     name: String,
     value: String
 }
 
 #[derive(Debug, Deserialize)]
-struct Priority {
+pub struct Priority {
     value: i32,
     name: String
 }
