@@ -54,6 +54,7 @@ pub fn render_tasks(tasks: &[Maniphest], config: &FabConfig) {
                 .add_attribute(Attribute::Bold),
             Cell::new(&task.fields.name),
             Cell::new(&task.get_task_url(config))
+                .add_attribute(Attribute::Bold)
         ]);
     }
 
