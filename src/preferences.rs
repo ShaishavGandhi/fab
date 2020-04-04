@@ -97,8 +97,8 @@ pub fn process_configuration(_matches: &ArgMatches) -> io::Result<()> {
 }
 
 fn get_chosen_priorities(
-    possible_priorities: &Vec<&str>,
-    current_priorities: &Vec<String>,
+    possible_priorities: &[&str],
+    current_priorities: &[String],
 ) -> io::Result<Vec<String>> {
     let theme = &ColorfulTheme::default();
     let checked_priorities: Vec<(&str, bool)> = possible_priorities
