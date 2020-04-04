@@ -1,40 +1,39 @@
-use serde::{Deserialize, Serialize};
 use comfy_table::Color;
+use serde::{Deserialize, Serialize};
 
 #[derive(Deserialize, Serialize, Debug)]
 pub struct FabConfig {
     pub hosted_instance: String,
     pub api_token: String,
-    pub phid: String
+    pub phid: String,
 }
 
 #[derive(Deserialize, Serialize, Debug)]
 pub struct RevisionData {
-    pub data: Vec<Revision>
+    pub data: Vec<Revision>,
 }
 
 #[derive(Deserialize, Serialize, Debug)]
 pub struct WhoAmIResponse {
-    pub result: UserResponse
+    pub result: UserResponse,
 }
 
 #[derive(Deserialize, Serialize, Debug)]
 pub struct UserResponse {
     pub phid: String,
     #[serde(rename = "userName")]
-    pub user_name: String
+    pub user_name: String,
 }
 
 #[derive(Deserialize, Serialize, Debug)]
 pub struct Revision {
     pub id: i32,
-    pub fields: Fields
+    pub fields: Fields,
 }
 
 impl Revision {
-
     pub fn url(&self, config: &FabConfig) -> String {
-        return format!("{}D{}", &config.hosted_instance, &self.id)
+        return format!("{}D{}", &config.hosted_instance, &self.id);
     }
 
     pub fn get_background(&self) -> Color {
@@ -67,13 +66,13 @@ impl Revision {
 #[derive(Deserialize, Serialize, Debug)]
 pub struct Fields {
     pub title: String,
-    pub status: Status
+    pub status: Status,
 }
 
 #[derive(Deserialize, Serialize, Debug)]
 pub struct Status {
     pub name: String,
-    pub closed: bool
+    pub closed: bool,
 }
 
 #[cfg(test)]
@@ -83,13 +82,16 @@ mod tests {
 
     #[test]
     fn test_get_foreground_background_accepted() {
-        let revision = Revision { id : 1, fields : Fields {
-            title : String::from("Sample diff"),
-            status: Status {
-                name: String::from("Accepted"),
-                closed: false
-            }
-        }};
+        let revision = Revision {
+            id: 1,
+            fields: Fields {
+                title: String::from("Sample diff"),
+                status: Status {
+                    name: String::from("Accepted"),
+                    closed: false,
+                },
+            },
+        };
 
         assert_eq!(Color::Green, revision.get_background());
         assert_eq!(Color::Black, revision.get_foreground());
@@ -97,13 +99,16 @@ mod tests {
 
     #[test]
     fn test_get_foreground_background_needs_revision() {
-        let revision = Revision { id : 1, fields : Fields {
-            title : String::from("Sample diff"),
-            status: Status {
-                name: String::from("Needs Revision"),
-                closed: false
-            }
-        }};
+        let revision = Revision {
+            id: 1,
+            fields: Fields {
+                title: String::from("Sample diff"),
+                status: Status {
+                    name: String::from("Needs Revision"),
+                    closed: false,
+                },
+            },
+        };
 
         assert_eq!(Color::Red, revision.get_background());
         assert_eq!(Color::White, revision.get_foreground());
@@ -111,13 +116,16 @@ mod tests {
 
     #[test]
     fn test_status_colors_needs_review() {
-        let revision = Revision { id : 1, fields : Fields {
-            title : String::from("Sample diff"),
-            status: Status {
-                name: String::from("Needs Review"),
-                closed: false
-            }
-        }};
+        let revision = Revision {
+            id: 1,
+            fields: Fields {
+                title: String::from("Sample diff"),
+                status: Status {
+                    name: String::from("Needs Review"),
+                    closed: false,
+                },
+            },
+        };
 
         assert_eq!(Color::Magenta, revision.get_background());
         assert_eq!(Color::White, revision.get_foreground());

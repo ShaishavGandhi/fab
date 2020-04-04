@@ -1,8 +1,8 @@
-use crate::structs::{Revision, FabConfig, RevisionData};
-use clap::ArgMatches;
-use comfy_table::{Table, Cell, ContentArrangement, Attribute, CellAlignment};
-use crate::NO_BORDER_PRESET;
 use crate::auth;
+use crate::structs::{FabConfig, Revision, RevisionData};
+use crate::NO_BORDER_PRESET;
+use clap::ArgMatches;
+use comfy_table::{Attribute, Cell, CellAlignment, ContentArrangement, Table};
 
 const DIFFERENTIAL_SEARCH_URL: &str = "api/differential.revision.search";
 
@@ -20,54 +20,59 @@ pub fn process_diff_command(_matches: &ArgMatches, config: &FabConfig) {
 /// Get diffs that are authored by the user.
 pub fn get_authored_diffs(config: &FabConfig) -> Result<Vec<Revision>, String> {
     let json_body = json!({
-            "queryKey": "authored",
-            "api.token": config.api_token,
-        });
+        "queryKey": "authored",
+        "api.token": config.api_token,
+    });
 
-    let url = format!("{}{}", &config.hosted_instance, DIFFERENTIAL_SEARCH_URL.to_string());
+    let url = format!(
+        "{}{}",
+        &config.hosted_instance,
+        DIFFERENTIAL_SEARCH_URL.to_string()
+    );
 
-    let result = auth::send::<RevisionData>(config, reqwest::blocking::Client::new()
-        .post(&url)
-        .form(&json_body));
+    let result = auth::send::<RevisionData>(
+        config,
+        reqwest::blocking::Client::new().post(&url).form(&json_body),
+    );
 
     match result {
         Ok(result) => {
-            let revisions = result.data
+            let revisions = result
+                .data
                 .into_iter()
                 .filter(|rev| !rev.fields.status.closed)
                 .collect();
             Result::Ok(revisions)
-        },
-        Err(_err) => {
-            Result::Err(String::from("Couldn't fetch authored diffs"))
         }
+        Err(_err) => Result::Err(String::from("Couldn't fetch authored diffs")),
     }
 }
 
 /// Get the diffs that needs review from the user.
 pub fn get_needs_review_diffs(config: &FabConfig) -> Result<Vec<Revision>, String> {
     let json_body = json!({
-            "api.token": config.api_token,
-            "constraints[reviewerPHIDs][0]": config.phid
-        });
+        "api.token": config.api_token,
+        "constraints[reviewerPHIDs][0]": config.phid
+    });
 
     let url = format!("{}{}", config.hosted_instance, DIFFERENTIAL_SEARCH_URL);
 
-    let result = auth::send::<RevisionData>(config, reqwest::blocking::Client::new()
-        .post(&url)
-        .form(&json_body));
-
+    let result = auth::send::<RevisionData>(
+        config,
+        reqwest::blocking::Client::new().post(&url).form(&json_body),
+    );
 
     match result {
         Ok(response) => {
-            let revisions = response.data
+            let revisions = response
+                .data
                 .into_iter()
                 .filter(|rev| !rev.fields.status.closed)
                 .collect();
 
             Result::Ok(revisions)
-        },
-        Err(_err) => Result::Err(String::from("Failed to fetch needs-review diffs"))
+        }
+        Err(_err) => Result::Err(String::from("Failed to fetch needs-review diffs")),
     }
 }
 
@@ -86,16 +91,15 @@ pub fn render_diffs(config: &FabConfig, revisions: &[Revision]) {
                 .set_alignment(CellAlignment::Center)
                 .add_attribute(Attribute::Bold),
             Cell::new(&revision.fields.title),
-            Cell::new(&revision.url(config))
-                .add_attribute(Attribute::Bold)
+            Cell::new(&revision.url(config)).add_attribute(Attribute::Bold),
         ]);
     }
     println!("{}", table);
 }
 
-
 fn process_diffs_needs_review(config: &FabConfig) {
-    let revisions = get_needs_review_diffs(config).expect("Failed to fetch response for needs-review diffs");
+    let revisions =
+        get_needs_review_diffs(config).expect("Failed to fetch response for needs-review diffs");
 
     // let revisions = response.data.iter().filter(|rev| !rev.fields.status.closed).collect();
     render_diffs(config, &revisions)

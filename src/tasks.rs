@@ -1,10 +1,10 @@
-use clap::{ArgMatches};
-use serde::{Deserialize};
-use crate::structs::FabConfig;
-use comfy_table::{Table, ContentArrangement, Cell, CellAlignment, Attribute, Color};
-use crate::{NO_BORDER_PRESET, auth};
-use serde_json::{Map, Value};
 use crate::preferences::Preferences;
+use crate::structs::FabConfig;
+use crate::{auth, NO_BORDER_PRESET};
+use clap::ArgMatches;
+use comfy_table::{Attribute, Cell, CellAlignment, Color, ContentArrangement, Table};
+use serde::Deserialize;
+use serde_json::{Map, Value};
 
 const MANIPHEST_SEARCH: &str = "api/maniphest.search";
 
@@ -12,29 +12,38 @@ pub fn process_task_command(matches: &ArgMatches, config: &FabConfig, preference
     process_list_tasks(matches, config, preferences)
 }
 
-pub fn get_tasks(limit: &str, priorities: &[i32], config: &FabConfig) -> Result<Vec<Maniphest>, String> {
+pub fn get_tasks(
+    limit: &str,
+    priorities: &[i32],
+    config: &FabConfig,
+) -> Result<Vec<Maniphest>, String> {
     let mut map = Map::new();
     map.insert("queryKey".to_string(), Value::from("assigned"));
-    map.insert("api.token".to_string(), Value::from(config.api_token.clone()));
+    map.insert(
+        "api.token".to_string(),
+        Value::from(config.api_token.clone()),
+    );
     map.insert("limit".to_string(), Value::from(limit));
 
     for (i, &priority) in priorities.iter().enumerate() {
-        map.insert(format!("constraints[priorities][{}]", i), Value::from(priority));
+        map.insert(
+            format!("constraints[priorities][{}]", i),
+            Value::from(priority),
+        );
     }
 
     let json_body = Value::Object(map);
 
     let url = format!("{}{}", &config.hosted_instance, MANIPHEST_SEARCH);
 
-    let result = auth::send::<ManiphestSearchData>(config, reqwest::blocking::Client::new()
-        .post(&url)
-        .form(&json_body));
+    let result = auth::send::<ManiphestSearchData>(
+        config,
+        reqwest::blocking::Client::new().post(&url).form(&json_body),
+    );
 
     match result {
-        Ok(response) => {
-            Result::Ok(response.data)
-        },
-        Err(_mess) => Result::Err(String::from("Error fetching tasks"))
+        Ok(response) => Result::Ok(response.data),
+        Err(_mess) => Result::Err(String::from("Error fetching tasks")),
     }
 }
 
@@ -45,7 +54,6 @@ pub fn render_tasks(tasks: &[Maniphest], config: &FabConfig) {
         .load_preset(NO_BORDER_PRESET)
         .set_content_arrangement(ContentArrangement::Dynamic);
 
-
     for task in tasks {
         table.add_row(vec![
             Cell::new(&task.fields.priority.name)
@@ -54,8 +62,7 @@ pub fn render_tasks(tasks: &[Maniphest], config: &FabConfig) {
                 .set_alignment(CellAlignment::Center)
                 .add_attribute(Attribute::Bold),
             Cell::new(&task.fields.name),
-            Cell::new(&task.get_task_url(config))
-                .add_attribute(Attribute::Bold)
+            Cell::new(&task.get_task_url(config)).add_attribute(Attribute::Bold),
         ]);
     }
 
@@ -70,7 +77,10 @@ fn process_list_tasks(matches: &ArgMatches, config: &FabConfig, preferences: &Pr
         .expect("Couldn't parse priority. Must be one of ['unbreak-now', 'needs-triage', 'high', 'normal', 'low', 'wishlist']")
         .collect();
 
-    let priorities: Vec<i32> = priorities.iter().map(|priority| Priority::get_value_for_name(priority).unwrap()).collect();
+    let priorities: Vec<i32> = priorities
+        .iter()
+        .map(|priority| Priority::get_value_for_name(priority).unwrap())
+        .collect();
 
     let tasks = get_tasks(limit, &priorities, config).expect("Error fetching tasks");
     render_tasks(&tasks, config)
@@ -78,13 +88,13 @@ fn process_list_tasks(matches: &ArgMatches, config: &FabConfig, preferences: &Pr
 
 #[derive(Debug, Deserialize)]
 struct ManiphestSearchData {
-    data: Vec<Maniphest>
+    data: Vec<Maniphest>,
 }
 
 #[derive(Debug, Deserialize)]
 pub struct Maniphest {
     id: i32,
-    fields: Fields
+    fields: Fields,
 }
 
 impl Maniphest {
@@ -101,7 +111,7 @@ impl Maniphest {
             50 => Color::DarkYellow,
             25 => Color::Yellow,
             0 => Color::Cyan,
-            _ => Color::Blue
+            _ => Color::Blue,
         }
     }
 
@@ -114,7 +124,7 @@ impl Maniphest {
             50 => Color::Black,
             25 => Color::Black,
             0 => Color::Black,
-            _ => Color::White
+            _ => Color::White,
         }
     }
 }
@@ -123,19 +133,19 @@ impl Maniphest {
 pub struct Fields {
     name: String,
     status: Status,
-    priority: Priority
+    priority: Priority,
 }
 
 #[derive(Debug, Deserialize)]
 pub struct Status {
     name: String,
-    value: String
+    value: String,
 }
 
 #[derive(Debug, Deserialize)]
 pub struct Priority {
     value: i32,
-    name: String
+    name: String,
 }
 
 impl Priority {
@@ -147,7 +157,7 @@ impl Priority {
             "normal" => Result::Ok(50),
             "low" => Result::Ok(25),
             "wishlist" => Result::Ok(0),
-            _ => Result::Err("Unknown value of priority")
+            _ => Result::Err("Unknown value of priority"),
         }
     }
 }
@@ -159,22 +169,40 @@ mod tests {
     #[test]
     fn test_get_value_for_name() {
         let priority = "unbreak-now";
-        assert_eq!(100, Priority::get_value_for_name(&priority.to_string()).unwrap_or(-1));
+        assert_eq!(
+            100,
+            Priority::get_value_for_name(&priority.to_string()).unwrap_or(-1)
+        );
 
         let priority = "high";
-        assert_eq!(80, Priority::get_value_for_name(&priority.to_string()).unwrap_or(80));
+        assert_eq!(
+            80,
+            Priority::get_value_for_name(&priority.to_string()).unwrap_or(80)
+        );
 
         let priority = "needs-triage";
-        assert_eq!(90, Priority::get_value_for_name(&priority.to_string()).unwrap_or(90));
+        assert_eq!(
+            90,
+            Priority::get_value_for_name(&priority.to_string()).unwrap_or(90)
+        );
 
         let priority = "normal";
-        assert_eq!(50, Priority::get_value_for_name(&priority.to_string()).unwrap_or(50));
+        assert_eq!(
+            50,
+            Priority::get_value_for_name(&priority.to_string()).unwrap_or(50)
+        );
 
         let priority = "low";
-        assert_eq!(25, Priority::get_value_for_name(&priority.to_string()).unwrap_or(25));
+        assert_eq!(
+            25,
+            Priority::get_value_for_name(&priority.to_string()).unwrap_or(25)
+        );
 
         let priority = "wishlist";
-        assert_eq!(0, Priority::get_value_for_name(&priority.to_string()).unwrap_or(0));
+        assert_eq!(
+            0,
+            Priority::get_value_for_name(&priority.to_string()).unwrap_or(0)
+        );
     }
 
     #[test]
@@ -185,13 +213,13 @@ mod tests {
                 name: String::from("Name of the task"),
                 status: Status {
                     name: String::from("open"),
-                    value: String::from("Open")
+                    value: String::from("Open"),
                 },
                 priority: Priority {
                     value: 100,
-                    name: String::from("Unbreak Now")
-                }
-            }
+                    name: String::from("Unbreak Now"),
+                },
+            },
         };
 
         assert_eq!(Color::Red, maniphest.get_background());
@@ -206,13 +234,13 @@ mod tests {
                 name: String::from("Name of the task"),
                 status: Status {
                     name: String::from("open"),
-                    value: String::from("Open")
+                    value: String::from("Open"),
                 },
                 priority: Priority {
                     value: 80,
-                    name: String::from("High")
-                }
-            }
+                    name: String::from("High"),
+                },
+            },
         };
 
         assert_eq!(Color::DarkRed, maniphest.get_background());
@@ -227,13 +255,13 @@ mod tests {
                 name: String::from("Name of the task"),
                 status: Status {
                     name: String::from("open"),
-                    value: String::from("Open")
+                    value: String::from("Open"),
                 },
                 priority: Priority {
                     value: 90,
-                    name: String::from("Needs Triage")
-                }
-            }
+                    name: String::from("Needs Triage"),
+                },
+            },
         };
 
         assert_eq!(Color::Magenta, maniphest.get_background());
@@ -248,13 +276,13 @@ mod tests {
                 name: String::from("Name of the task"),
                 status: Status {
                     name: String::from("open"),
-                    value: String::from("Open")
+                    value: String::from("Open"),
                 },
                 priority: Priority {
                     value: 50,
-                    name: String::from("Normal")
-                }
-            }
+                    name: String::from("Normal"),
+                },
+            },
         };
 
         assert_eq!(Color::DarkYellow, maniphest.get_background());
@@ -269,13 +297,13 @@ mod tests {
                 name: String::from("Name of the task"),
                 status: Status {
                     name: String::from("open"),
-                    value: String::from("Open")
+                    value: String::from("Open"),
                 },
                 priority: Priority {
                     value: 25,
-                    name: String::from("Low")
-                }
-            }
+                    name: String::from("Low"),
+                },
+            },
         };
 
         assert_eq!(Color::Yellow, maniphest.get_background());
@@ -290,13 +318,13 @@ mod tests {
                 name: String::from("Name of the task"),
                 status: Status {
                     name: String::from("open"),
-                    value: String::from("Open")
+                    value: String::from("Open"),
                 },
                 priority: Priority {
                     value: 0,
-                    name: String::from("Wishlist")
-                }
-            }
+                    name: String::from("Wishlist"),
+                },
+            },
         };
 
         assert_eq!(Color::Cyan, maniphest.get_background());
