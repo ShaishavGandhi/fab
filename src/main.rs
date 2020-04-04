@@ -49,7 +49,7 @@ fn main() {
                     Arg::with_name("priority")
                         .short('p')
                         .long("priority")
-                            .possible_values(&[
+                        .possible_values(&[
                             "unbreak-now",
                             "needs-triage",
                             "high",
