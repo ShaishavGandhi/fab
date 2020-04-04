@@ -3,20 +3,17 @@ use crate::structs::FabConfig;
 use crate::{auth, NO_BORDER_PRESET};
 use clap::ArgMatches;
 use comfy_table::{Attribute, Cell, CellAlignment, Color, ContentArrangement, Table};
+use failure::Error;
 use serde::Deserialize;
 use serde_json::{Map, Value};
 
 const MANIPHEST_SEARCH: &str = "api/maniphest.search";
 
-pub fn process_task_command(matches: &ArgMatches, config: &FabConfig, preferences: &Preferences) {
-    process_list_tasks(matches, config, preferences)
-}
-
 pub fn get_tasks(
     limit: &str,
     priorities: &[i32],
     config: &FabConfig,
-) -> Result<Vec<Maniphest>, String> {
+) -> Result<Vec<Maniphest>, Error> {
     let mut map = Map::new();
     map.insert("queryKey".to_string(), Value::from("assigned"));
     map.insert(
@@ -39,12 +36,14 @@ pub fn get_tasks(
     let result = auth::send::<ManiphestSearchData>(
         config,
         reqwest::blocking::Client::new().post(&url).form(&json_body),
-    );
+    )?;
 
-    match result {
-        Ok(response) => Result::Ok(response.data),
-        Err(_mess) => Result::Err(String::from("Error fetching tasks")),
-    }
+    Ok(result.data)
+
+    // match result {
+    //     Ok(response) => Result::Ok(response.data),
+    //     Err(_mess) => Result::Err(String::from("Error fetching tasks")),
+    // }
 }
 
 pub fn render_tasks(tasks: &[Maniphest], config: &FabConfig) {
@@ -69,7 +68,19 @@ pub fn render_tasks(tasks: &[Maniphest], config: &FabConfig) {
     println!("{}", table)
 }
 
-fn process_list_tasks(matches: &ArgMatches, config: &FabConfig, preferences: &Preferences) {
+pub fn process_task_command(
+    matches: &ArgMatches,
+    config: &FabConfig,
+    preferences: &Preferences,
+) -> Result<(), Error> {
+    process_list_tasks(matches, config, preferences)
+}
+
+fn process_list_tasks(
+    matches: &ArgMatches,
+    config: &FabConfig,
+    preferences: &Preferences,
+) -> Result<(), Error> {
     let pref_limit: &str = &preferences.default_limit.to_string();
     let limit = matches.value_of("limit").unwrap_or(pref_limit);
 
@@ -82,8 +93,9 @@ fn process_list_tasks(matches: &ArgMatches, config: &FabConfig, preferences: &Pr
         .map(|priority| Priority::get_value_for_name(priority).unwrap())
         .collect();
 
-    let tasks = get_tasks(limit, &priorities, config).expect("Error fetching tasks");
-    render_tasks(&tasks, config)
+    let tasks = get_tasks(limit, &priorities, config)?;
+    render_tasks(&tasks, config);
+    Ok(())
 }
 
 #[derive(Debug, Deserialize)]
@@ -149,7 +161,7 @@ pub struct Priority {
 }
 
 impl Priority {
-    pub fn get_value_for_name(name: &str) -> Result<i32, &str> {
+    pub fn get_value_for_name(name: &str) -> Result<i32, Error> {
         match name.trim() {
             "unbreak-now" => Result::Ok(100),
             "needs-triage" => Result::Ok(90),
@@ -157,7 +169,7 @@ impl Priority {
             "normal" => Result::Ok(50),
             "low" => Result::Ok(25),
             "wishlist" => Result::Ok(0),
-            _ => Result::Err("Unknown value of priority"),
+            _ => Result::Err(failure::err_msg("Unknown value of priority")),
         }
     }
 }

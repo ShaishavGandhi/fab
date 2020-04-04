@@ -3,9 +3,9 @@ extern crate serde_json;
 
 use clap;
 use clap::{App, Arg};
+use failure::Error;
 mod auth;
 mod diffs;
-mod network;
 mod preferences;
 mod structs;
 mod summary;
@@ -15,9 +15,9 @@ const WHO_AM_I: &str = "api/user.whoami";
 /// Preset for comfy-table so that it styles the table for no borders
 const NO_BORDER_PRESET: &str = "                     ";
 
-fn main() {
+fn main() -> Result<(), Error> {
     let version = "0.2.0";
-    let preferences = preferences::get_preferences().unwrap();
+    let preferences = preferences::get_preferences()?;
 
     let default_task_priority: &Vec<&str> = &preferences
         .default_task_priority
@@ -83,20 +83,16 @@ fn main() {
         )
         .get_matches();
 
-    let result = auth::init();
-    let config = match result {
-        Ok(config) => config,
-        Err(message) => panic!("{}", message),
-    };
+    let config = auth::init()?;
 
     if let Some(matches) = matches.subcommand_matches("diffs") {
-        diffs::process_diff_command(matches, &config)
+        diffs::process_diff_command(matches, &config)?
     } else if let Some(matches) = matches.subcommand_matches("tasks") {
-        tasks::process_task_command(matches, &config, &preferences)
+        tasks::process_task_command(matches, &config, &preferences)?
     } else if let Some(matches) = matches.subcommand_matches("summary") {
-        summary::process_summary(matches, &config, &preferences);
+        summary::process_summary(matches, &config, &preferences)?;
     } else if let Some(matches) = matches.subcommand_matches("configure") {
-        preferences::process_configuration(matches)
-            .expect("Failed to process configuration command");
+        preferences::process_configuration(matches)?;
     }
+    Ok(())
 }
