@@ -75,6 +75,12 @@ fn main() {
                 .version(version)
                 .author("Shaishav <shaishavgandhi05@gmail.com>"),
         )
+        .subcommand(
+            App::new("configure")
+                .about("Configure settings ")
+                .version(version)
+                .author("Shaishav <shaishavgandhi05@gmail.com>"),
+        )
         .get_matches();
 
     let result = auth::init();
@@ -89,5 +95,8 @@ fn main() {
         tasks::process_task_command(matches, &config, &preferences)
     } else if let Some(matches) = matches.subcommand_matches("summary") {
         summary::process_summary(matches, &config, &preferences);
+    } else if let Some(matches) = matches.subcommand_matches("configure") {
+        preferences::process_configuration(matches)
+            .expect("Failed to process configuration command");
     }
 }
