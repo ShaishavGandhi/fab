@@ -281,6 +281,17 @@ dependencies = [
 ]
 
 [[package]]
+name = "dialoguer"
+version = "0.5.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "94616e25d2c04fc97253d145f6ca33ad84a584258dc70c4e621cc79a57f903b6"
+dependencies = [
+ "console",
+ "lazy_static",
+ "tempfile",
+]
+
+[[package]]
 name = "directories"
 version = "2.0.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -351,6 +362,7 @@ dependencies = [
  "comfy-table",
  "confy",
  "console",
+ "dialoguer",
  "dirs",
  "reqwest",
  "serde",
