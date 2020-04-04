@@ -75,6 +75,6 @@ fn main() {
     } else if let Some(matches) = matches.subcommand_matches("summary") {
         summary::process_summary(matches, &config, &preferences);
     } else if let Some(matches) = matches.subcommand_matches("configure") {
-        preferences::process_configuration(matches);
+        preferences::process_configuration(matches).expect("Failed to process configuration command");
     }
 }

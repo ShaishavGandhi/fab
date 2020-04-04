@@ -1,6 +1,6 @@
 use serde::{Deserialize, Serialize};
 use clap::ArgMatches;
-use dialoguer::Checkboxes;
+use dialoguer::{Checkboxes, Input};
 use dialoguer::theme::ColorfulTheme;
 use console::style;
 use std::io;
@@ -36,17 +36,36 @@ impl ::std::default::Default for Preferences {
     }
 }
 
-pub fn process_configuration(_matches: &ArgMatches) {
+pub fn process_configuration(_matches: &ArgMatches) -> io::Result<()> {
     let current_preferences = get_preferences().expect("Couldn't get current preferences");
 
     let possible_priorities = vec!["unbreak-now", "needs-triage", "high", "normal", "low", "wishlist"];
 
-    println!("{}", style("Chose the task priorities to include in your summary").bold().underlined());
+    println!("{}", style("Choose the task priorities to include in your summary").bold().underlined());
     println!("(Press space to select a priority)");
 
-    let result = get_chosen_priorities(&possible_priorities, &current_preferences.summary_task_priority);
+    let summary_priorities = get_chosen_priorities(&possible_priorities, &current_preferences.summary_task_priority)?;
 
+    println!("{}", style("Choose the task priorities as your default for `fab tasks`").bold().underlined());
+    println!("(Press space to select a priority)");
 
+    let default_task_priorities = get_chosen_priorities(&possible_priorities, &current_preferences.default_task_priority)?;
+
+    println!("{}", style("Choose default limit for Fab results").bold().underlined());
+
+    let default_limit = Input::with_theme(&ColorfulTheme::default())
+        .with_initial_text(&current_preferences.default_limit.to_string())
+        .interact()?;
+
+    let new_preferences = Preferences {
+        summary_task_priority: summary_priorities,
+        default_task_priority: default_task_priorities,
+        default_limit
+    };
+
+    set_preferences(&new_preferences);
+
+    Ok(())
 }
 
 fn get_chosen_priorities(possible_priorities: &Vec<&str>, current_priorities: &Vec<String>) -> io::Result<Vec<String>> {
