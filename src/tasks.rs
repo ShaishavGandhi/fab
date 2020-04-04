@@ -1,14 +1,15 @@
-use clap::ArgMatches;
+use clap::{ArgMatches};
 use serde::{Deserialize};
 use crate::structs::FabConfig;
 use comfy_table::{Table, ContentArrangement, Cell, CellAlignment, Attribute, Color};
 use crate::{NO_BORDER_PRESET, auth};
 use serde_json::{Map, Value};
+use crate::preferences::Preferences;
 
 const MANIPHEST_SEARCH: &str = "api/maniphest.search";
 
-pub fn process_task_command(matches: &ArgMatches, config: &FabConfig) {
-    process_list_tasks(matches, config)
+pub fn process_task_command(matches: &ArgMatches, config: &FabConfig, preferences: &Preferences) {
+    process_list_tasks(matches, config, preferences)
 }
 
 pub fn get_tasks(limit: &str, priorities: &[i32], config: &FabConfig) -> Result<Vec<Maniphest>, String> {
@@ -61,8 +62,10 @@ pub fn render_tasks(tasks: &[Maniphest], config: &FabConfig) {
     println!("{}", table)
 }
 
-fn process_list_tasks(matches: &ArgMatches, config: &FabConfig) {
-    let limit = matches.value_of("limit").expect("No limit specified for query");
+fn process_list_tasks(matches: &ArgMatches, config: &FabConfig, preferences: &Preferences) {
+    let pref_limit: &str = &preferences.default_limit.to_string();
+    let limit = matches.value_of("limit").unwrap_or(pref_limit);
+
     let priorities: Vec<_> = matches.values_of("priority")
         .expect("Couldn't parse priority. Must be one of ['unbreak-now', 'needs-triage', 'high', 'normal', 'low', 'wishlist']")
         .collect();

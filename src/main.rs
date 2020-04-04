@@ -3,49 +3,58 @@
 extern crate serde_json;
 
 use clap;
-use clap::{App, SubCommand, Arg};
+use clap::{App, Arg};
 mod structs;
 mod diffs;
 mod tasks;
 mod network;
 mod auth;
 mod summary;
+mod preferences;
 
 const WHO_AM_I: &str = "api/user.whoami";
 /// Preset for comfy-table so that it styles the table for no borders
 const NO_BORDER_PRESET: &str = "                     ";
 
 fn main() {
+    let version = "0.2.0";
+    let preferences = preferences::get_preferences().unwrap();
+
+    let default_task_priority: &Vec<&str> = &preferences.default_task_priority
+        .iter()
+        .map(std::ops::Deref::deref)
+        .collect();
+
     let matches = App::new("Fab")
         .author("Shaishav <shaishavgandhi05@gmail.com>")
-        .version("0.1.0")
-        .subcommand(SubCommand::with_name("diffs")
-            .version("0.1.0")
+        .version(version)
+        .subcommand(App::new("diffs")
+            .version(version)
             .author("Shaishav <shaishavgandhi05@gmail.com>")
             .about("Commands related to your differential revisions")
             .arg(Arg::with_name("needs-review")
-                .short("n")
+                .short('n')
                 .long("needs-review")
                 .help("Show diffs that need your review")))
-        .subcommand(SubCommand::with_name("tasks")
+        .subcommand(App::new("tasks")
             .about("Commands related to maniphest tasks")
-            .version("0.1.0")
+            .version(version)
             .author("Shaishav <shaishavgandhi05@gmail.com>")
             .arg(Arg::with_name("priority")
-                .short("p")
+                .short('p')
                 .long("priority")
                 .possible_values(&["unbreak-now", "needs-triage", "high", "normal", "low", "wishlist"])
                 .help("Specify the priority of the task")
-                .default_value("high")
+                .default_values(default_task_priority)
                 .multiple(true))
             .arg(Arg::with_name("limit")
-                .short("l")
+                .short('l')
                 .long("limit")
                 .help("limit results by a value")
                 .default_value("20")))
-        .subcommand(SubCommand::with_name("summary")
+        .subcommand(App::new("summary")
             .about("Gives a snapshot of what is relevant to you in the moment")
-            .version("0.1.0")
+            .version(version)
             .author("Shaishav <shaishavgandhi05@gmail.com>"))
         .get_matches();
 
@@ -59,8 +68,8 @@ fn main() {
     if let Some(matches) = matches.subcommand_matches("diffs") {
         diffs::process_diff_command(matches, &config)
     } else if let Some(matches) = matches.subcommand_matches("tasks") {
-        tasks::process_task_command(matches, &config)
+        tasks::process_task_command(matches, &config, &preferences)
     } else if let Some(matches) = matches.subcommand_matches("summary") {
-        summary::process_summary(matches, &config);
+        summary::process_summary(matches, &config, &preferences);
     }
 }
