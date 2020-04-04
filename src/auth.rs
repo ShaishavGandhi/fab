@@ -25,24 +25,10 @@ pub fn init() -> Result<FabConfig, Error> {
             println!("Enter the URL where your Phabricator instance is hosted. Example: https://phab.mycompany.com/");
 
             let hosted_instance = prompt_hosted_instance()?;
-            // if hosted_instance.is_err() {
-            //     return Result::Err(hosted_instance.err().unwrap());
-            // }
-
-            // let hosted_instance = hosted_instance;
 
             let token = prompt_token(&hosted_instance)?;
-            // if token.is_err() {
-            //     return Result::Err(token.err().unwrap());
-            // }
-            //
-            // let token = token.unwrap();
 
             // Get user's details
-            // let phid = match get_phid(&hosted_instance, &token) {
-            //     Ok(phid) => phid,
-            //     Err(message) => panic!(message),
-            // };
             let phid = get_phid(&hosted_instance, &token)?;
 
             let config = FabConfig {
@@ -176,10 +162,6 @@ fn get_phid(hosted_instance: &str, api_token: &str) -> Result<String, Error> {
         .json::<WhoAmIResponse>()?;
 
     Ok(response.result.phid)
-    // match response.json::<WhoAmIResponse>() {
-    //     Ok(res) => Result::Ok(res.result.phid),
-    //     Err(_message) => Result::Err(String::from("Error getting user's phabricator ID")),
-    // }
 }
 
 #[derive(Deserialize, Debug)]

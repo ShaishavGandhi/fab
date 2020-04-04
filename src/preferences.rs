@@ -9,10 +9,6 @@ use std::io;
 /// Get user's preferences
 pub fn get_preferences() -> Result<Preferences, Error> {
     let prefs = confy::load::<Preferences>("fab")?;
-    // match prefs {
-    //     Ok(pref) => Result::Ok(pref),
-    //     Err(_err) => Result::Err(String::from("Couldn't load preferences")),
-    // }
     Ok(prefs)
 }
 

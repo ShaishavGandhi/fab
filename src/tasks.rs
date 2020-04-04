@@ -39,11 +39,6 @@ pub fn get_tasks(
     )?;
 
     Ok(result.data)
-
-    // match result {
-    //     Ok(response) => Result::Ok(response.data),
-    //     Err(_mess) => Result::Err(String::from("Error fetching tasks")),
-    // }
 }
 
 pub fn render_tasks(tasks: &[Maniphest], config: &FabConfig) {
