@@ -78,10 +78,12 @@ fn main() -> Result<(), Error> {
         .subcommand(
             App::new("configure")
                 .about("Configure settings")
-                .arg(Arg::with_name("reset")
-                    .short('r')
-                    .long("reset")
-                    .help("Reset preferences to their default value"))
+                .arg(
+                    Arg::with_name("reset")
+                        .short('r')
+                        .long("reset")
+                        .help("Reset preferences to their default value"),
+                )
                 .version(version)
                 .author("Shaishav <shaishavgandhi05@gmail.com>"),
         )

@@ -102,7 +102,7 @@ fn reset_preferences() -> Result<(), Error> {
     let default_preferences = Preferences {
         default_limit: 20,
         default_task_priority: vec![String::from("high")],
-        summary_task_priority: vec![String::from("high")]
+        summary_task_priority: vec![String::from("high")],
     };
 
     set_preferences(&default_preferences)
