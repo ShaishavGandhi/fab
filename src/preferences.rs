@@ -35,7 +35,12 @@ impl ::std::default::Default for Preferences {
     }
 }
 
-pub fn process_configuration(_matches: &ArgMatches) -> Result<(), Error> {
+pub fn process_configuration(matches: &ArgMatches) -> Result<(), Error> {
+    if matches.is_present("reset") {
+        reset_preferences()?;
+        println!("Successfully reset preferences to default");
+        return Ok(());
+    }
     let current_preferences = get_preferences()?;
 
     let possible_priorities = vec![
@@ -91,6 +96,16 @@ pub fn process_configuration(_matches: &ArgMatches) -> Result<(), Error> {
     };
 
     set_preferences(&new_preferences)
+}
+
+fn reset_preferences() -> Result<(), Error> {
+    let default_preferences = Preferences {
+        default_limit: 20,
+        default_task_priority: vec![String::from("high")],
+        summary_task_priority: vec![String::from("high")]
+    };
+
+    set_preferences(&default_preferences)
 }
 
 fn get_chosen_priorities(
