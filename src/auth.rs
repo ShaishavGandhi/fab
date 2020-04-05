@@ -1,11 +1,12 @@
 use crate::structs::{FabConfig, WhoAmIResponse};
 use crate::WHO_AM_I;
+use failure::Error;
 use reqwest::blocking::RequestBuilder;
 use serde::Deserialize;
 use std::fs::{read_to_string, File};
 use std::{fs, io};
 
-pub fn init() -> Result<FabConfig, String> {
+pub fn init() -> Result<FabConfig, Error> {
     let existing_config = read_config();
 
     match existing_config {
@@ -23,25 +24,12 @@ pub fn init() -> Result<FabConfig, String> {
             println!("Let's get you started!");
             println!("Enter the URL where your Phabricator instance is hosted. Example: https://phab.mycompany.com/");
 
-            let hosted_instance = prompt_hosted_instance();
-            if hosted_instance.is_err() {
-                return Result::Err(hosted_instance.err().unwrap());
-            }
+            let hosted_instance = prompt_hosted_instance()?;
 
-            let hosted_instance = hosted_instance.unwrap();
-
-            let token = prompt_token(&hosted_instance);
-            if token.is_err() {
-                return Result::Err(token.err().unwrap());
-            }
-
-            let token = token.unwrap();
+            let token = prompt_token(&hosted_instance)?;
 
             // Get user's details
-            let phid = match get_phid(&hosted_instance, &token) {
-                Ok(phid) => phid,
-                Err(message) => panic!(message),
-            };
+            let phid = get_phid(&hosted_instance, &token)?;
 
             let config = FabConfig {
                 hosted_instance,
@@ -49,7 +37,7 @@ pub fn init() -> Result<FabConfig, String> {
                 phid,
             };
 
-            write_config(&config);
+            write_config(&config)?;
 
             Result::Ok(config)
         }
@@ -61,13 +49,9 @@ pub fn init() -> Result<FabConfig, String> {
 pub fn send<T: serde::de::DeserializeOwned>(
     config: &FabConfig,
     request: RequestBuilder,
-) -> Result<T, String> {
+) -> Result<T, Error> {
     let request = request.try_clone().unwrap();
-    let response = request
-        .send()
-        .unwrap()
-        .json::<NetworkResponse<T>>()
-        .unwrap();
+    let response = request.send()?.json::<NetworkResponse<T>>()?;
 
     if response.result.is_some() {
         return Result::Ok(response.result.unwrap());
@@ -76,7 +60,7 @@ pub fn send<T: serde::de::DeserializeOwned>(
 
         if error_code.eq("ERR-INVALID-AUTH") || error_code.eq("ERR-INVALID-SESSION") {
             println!("Your API Token has expired.");
-            let current_config = read_config().expect("Couldn't find existing config file");
+            let current_config = read_config()?;
             let token = prompt_token(&config.hosted_instance);
             match token {
                 Ok(token) => {
@@ -86,42 +70,38 @@ pub fn send<T: serde::de::DeserializeOwned>(
                         phid: current_config.phid,
                     };
 
-                    write_config(&new_config)
+                    write_config(&new_config)?;
                 }
                 Err(_err) => {}
             }
         }
     }
-    Result::Err(String::from(
+    Result::Err(failure::err_msg(
         "Token regenerated. Please try the command again",
     ))
 }
 
 /// Prompts for a token and writes the token to the configuration file.
-fn prompt_token(hosted_instance: &str) -> Result<String, String> {
+fn prompt_token(hosted_instance: &str) -> Result<String, Error> {
     println!("Enter an API token that Fab can use. You can create one at {}settings/user/YOUR_USERNAME/page/apitokens", &hosted_instance);
     let mut api_token = String::new();
 
-    io::stdin()
-        .read_line(&mut api_token)
-        .expect("Failed to read token");
+    io::stdin().read_line(&mut api_token)?;
 
     // Trim newlines
     api_token = api_token.trim().to_string();
 
     if api_token.is_empty() {
-        return Result::Err(String::from("API Token cannot be null or empty"));
+        return Result::Err(failure::err_msg("API Token cannot be null or empty"));
     }
 
     Result::Ok(api_token)
 }
 
-fn prompt_hosted_instance() -> Result<String, String> {
+fn prompt_hosted_instance() -> Result<String, Error> {
     let mut hosted_instance = String::new();
 
-    io::stdin()
-        .read_line(&mut hosted_instance)
-        .expect("Failed to read URL");
+    io::stdin().read_line(&mut hosted_instance)?;
 
     // Trim newlines
     hosted_instance = hosted_instance.trim().to_string();
@@ -133,65 +113,55 @@ fn prompt_hosted_instance() -> Result<String, String> {
 
     // Make sure hosted instance is present.
     if hosted_instance.is_empty() {
-        return Result::Err(String::from("Hosted Instance cannot be null"));
+        return Result::Err(failure::err_msg("Hosted instance cannot be empty"));
     }
 
-    Result::Ok(hosted_instance)
+    Ok(hosted_instance)
 }
 
-fn write_config(config: &FabConfig) {
-    let path_buf = dirs::home_dir().expect("Couldn't find home directory");
+fn write_config(config: &FabConfig) -> Result<(), Error> {
+    let path_buf = dirs::home_dir().unwrap();
 
-    let home_dir = path_buf
-        .to_str()
-        .expect("Couldn't convert home directory to string.");
+    let home_dir = path_buf.to_str().unwrap();
     let fab_dir = format!("{}/.fab", home_dir);
     let config_file = format!("{}/.fab/config.json", home_dir);
 
-    fs::create_dir_all(&fab_dir)
-        .unwrap_or_else(|_| panic!("Couldn't create directory {}", &fab_dir));
+    fs::create_dir_all(&fab_dir)?;
+
     serde_json::to_writer(
         &File::create(config_file).expect("Couldn't load file"),
         &config,
-    )
-    .expect("Couldn't write config to file");
+    )?;
+
+    Ok(())
 }
 
 /// Tries to read the config file
-fn read_config() -> Result<FabConfig, String> {
-    let path_buf = dirs::home_dir().expect("Couldn't find home directory");
+fn read_config() -> Result<FabConfig, Error> {
+    let path_buf = dirs::home_dir().unwrap();
 
-    let home_dir = path_buf
-        .to_str()
-        .expect("Couldn't convert home directory to string.");
+    let home_dir = path_buf.to_str().unwrap();
+
     let config_file = format!("{}/.fab/config.json", home_dir);
 
-    let contents = read_to_string(&config_file);
+    let contents = read_to_string(&config_file)?;
 
-    match contents {
-        Err(_message) => Result::Err(String::from("Failed to read file")),
-        Ok(content) => {
-            let config: FabConfig =
-                ::serde_json::from_str(&content).expect("Couldn't deserialize to FabConfig");
-            Result::Ok(config)
-        }
-    }
+    let config: FabConfig = ::serde_json::from_str(&contents)?;
+
+    Ok(config)
 }
 
-fn get_phid(hosted_instance: &str, api_token: &str) -> Result<String, String> {
+fn get_phid(hosted_instance: &str, api_token: &str) -> Result<String, Error> {
     let url = format!("{}{}", hosted_instance, WHO_AM_I);
     let json_body = json!({ "api.token": api_token });
 
     let response = reqwest::blocking::Client::new()
         .post(&url)
         .form(&json_body)
-        .send()
-        .expect("Error fetching user details");
+        .send()?
+        .json::<WhoAmIResponse>()?;
 
-    match response.json::<WhoAmIResponse>() {
-        Ok(res) => Result::Ok(res.result.phid),
-        Err(_message) => Result::Err(String::from("Error getting user's phabricator ID")),
-    }
+    Ok(response.result.phid)
 }
 
 #[derive(Deserialize, Debug)]

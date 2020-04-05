@@ -4,10 +4,15 @@ use crate::structs::FabConfig;
 use crate::tasks::{get_tasks, render_tasks, Priority};
 use clap::ArgMatches;
 use console::style;
+use failure::Error;
 
-pub fn process_summary(_matches: &ArgMatches, config: &FabConfig, preferences: &Preferences) {
-    let needs_review_diffs = get_needs_review_diffs(config).unwrap();
-    let authored_diffs = get_authored_diffs(config).unwrap();
+pub fn process_summary(
+    _matches: &ArgMatches,
+    config: &FabConfig,
+    preferences: &Preferences,
+) -> Result<(), Error> {
+    let needs_review_diffs = get_needs_review_diffs(config)?;
+    let authored_diffs = get_authored_diffs(config)?;
 
     let priorities: Vec<i32> = preferences
         .summary_task_priority
@@ -19,8 +24,7 @@ pub fn process_summary(_matches: &ArgMatches, config: &FabConfig, preferences: &
         preferences.default_limit.to_string().as_str(),
         &priorities,
         config,
-    )
-    .expect("Couldn't fetch tasks");
+    )?;
 
     println!(
         "{}",
@@ -43,4 +47,5 @@ pub fn process_summary(_matches: &ArgMatches, config: &FabConfig, preferences: &
     );
     println!();
     render_tasks(&tasks, config);
+    Ok(())
 }

@@ -2,21 +2,20 @@ use clap::ArgMatches;
 use console::style;
 use dialoguer::theme::ColorfulTheme;
 use dialoguer::{Checkboxes, Input};
+use failure::Error;
 use serde::{Deserialize, Serialize};
 use std::io;
 
 /// Get user's preferences
-pub fn get_preferences() -> Result<Preferences, String> {
-    let prefs = confy::load::<Preferences>("fab");
-    match prefs {
-        Ok(pref) => Result::Ok(pref),
-        Err(_err) => Result::Err(String::from("Couldn't load preferences")),
-    }
+pub fn get_preferences() -> Result<Preferences, Error> {
+    let prefs = confy::load::<Preferences>("fab")?;
+    Ok(prefs)
 }
 
 /// Stores new preferences to disk
-pub fn set_preferences(preferences: &Preferences) {
-    confy::store("fab", preferences).expect("Failed to set preferences");
+pub fn set_preferences(preferences: &Preferences) -> Result<(), Error> {
+    confy::store("fab", preferences)?;
+    Ok(())
 }
 
 #[derive(Serialize, Deserialize, Debug)]
@@ -36,8 +35,8 @@ impl ::std::default::Default for Preferences {
     }
 }
 
-pub fn process_configuration(_matches: &ArgMatches) -> io::Result<()> {
-    let current_preferences = get_preferences().expect("Couldn't get current preferences");
+pub fn process_configuration(_matches: &ArgMatches) -> Result<(), Error> {
+    let current_preferences = get_preferences()?;
 
     let possible_priorities = vec![
         "unbreak-now",
@@ -91,9 +90,7 @@ pub fn process_configuration(_matches: &ArgMatches) -> io::Result<()> {
         default_limit,
     };
 
-    set_preferences(&new_preferences);
-
-    Ok(())
+    set_preferences(&new_preferences)
 }
 
 fn get_chosen_priorities(
