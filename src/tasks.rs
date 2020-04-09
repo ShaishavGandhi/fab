@@ -4,12 +4,13 @@ use crate::{auth, NO_BORDER_PRESET};
 use clap::ArgMatches;
 use comfy_table::{Attribute, Cell, CellAlignment, Color, ContentArrangement, Table};
 use failure::Error;
+use futures::executor::block_on;
 use serde::Deserialize;
 use serde_json::{Map, Value};
 
 const MANIPHEST_SEARCH: &str = "api/maniphest.search";
 
-pub fn get_tasks(
+pub async fn get_tasks(
     limit: &str,
     priorities: &[i32],
     config: &FabConfig,
@@ -88,7 +89,7 @@ fn process_list_tasks(
         .map(|priority| Priority::get_value_for_name(priority).unwrap())
         .collect();
 
-    let tasks = get_tasks(limit, &priorities, config)?;
+    let tasks = block_on(get_tasks(limit, &priorities, config))?;
     render_tasks(&tasks, config);
     Ok(())
 }

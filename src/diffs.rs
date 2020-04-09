@@ -4,11 +4,12 @@ use crate::NO_BORDER_PRESET;
 use clap::ArgMatches;
 use comfy_table::{Attribute, Cell, CellAlignment, ContentArrangement, Table};
 use failure::Error;
+use futures::executor::block_on;
 
 const DIFFERENTIAL_SEARCH_URL: &str = "api/differential.revision.search";
 
 /// Get diffs that are authored by the user.
-pub fn get_authored_diffs(config: &FabConfig) -> Result<Vec<Revision>, Error> {
+pub async fn get_authored_diffs(config: &FabConfig) -> Result<Vec<Revision>, Error> {
     let json_body = json!({
         "queryKey": "authored",
         "api.token": config.api_token,
@@ -33,7 +34,7 @@ pub fn get_authored_diffs(config: &FabConfig) -> Result<Vec<Revision>, Error> {
 }
 
 /// Get the diffs that needs review from the user.
-pub fn get_needs_review_diffs(config: &FabConfig) -> Result<Vec<Revision>, Error> {
+pub async fn get_needs_review_diffs(config: &FabConfig) -> Result<Vec<Revision>, Error> {
     let json_body = json!({
         "api.token": config.api_token,
         "constraints[reviewerPHIDs][0]": config.phid
@@ -80,16 +81,15 @@ pub fn process_diff_command(_matches: &ArgMatches, config: &FabConfig) -> Result
         return Ok(());
     }
 
-    let result = get_authored_diffs(config)?;
+    let result = block_on(get_authored_diffs(config))?;
 
     render_diffs(config, &result);
     Ok(())
 }
 
 fn process_diffs_needs_review(config: &FabConfig) -> Result<(), Error> {
-    let revisions = get_needs_review_diffs(config)?;
+    let revisions = block_on(get_needs_review_diffs(config))?;
 
-    // let revisions = response.data.iter().filter(|rev| !rev.fields.status.closed).collect();
     render_diffs(config, &revisions);
     Ok(())
 }
