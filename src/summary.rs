@@ -5,7 +5,6 @@ use crate::tasks::{get_tasks, render_tasks, Priority};
 use clap::ArgMatches;
 use console::style;
 use failure::Error;
-use futures::executor::block_on;
 use futures::future::join3;
 
 pub fn process_summary(
@@ -19,7 +18,7 @@ pub fn process_summary(
         .map(|priority| Priority::get_value_for_name(&priority).unwrap())
         .collect();
 
-    let result = block_on(join3(
+    let result = tokio::runtime::Runtime::new()?.block_on(join3(
         get_needs_review_diffs(config),
         get_authored_diffs(config),
         get_tasks(

@@ -4,7 +4,6 @@ use crate::{auth, NO_BORDER_PRESET};
 use clap::ArgMatches;
 use comfy_table::{Attribute, Cell, CellAlignment, Color, ContentArrangement, Table};
 use failure::Error;
-use futures::executor::block_on;
 use serde::Deserialize;
 use serde_json::{Map, Value};
 
@@ -36,8 +35,9 @@ pub async fn get_tasks(
 
     let result = auth::send::<ManiphestSearchData>(
         config,
-        reqwest::blocking::Client::new().post(&url).form(&json_body),
-    )?;
+        reqwest::Client::new().post(&url).form(&json_body),
+    )
+    .await?;
 
     Ok(result.data)
 }
@@ -89,7 +89,7 @@ fn process_list_tasks(
         .map(|priority| Priority::get_value_for_name(priority).unwrap())
         .collect();
 
-    let tasks = block_on(get_tasks(limit, &priorities, config))?;
+    let tasks = tokio::runtime::Runtime::new()?.block_on(get_tasks(limit, &priorities, config))?;
     render_tasks(&tasks, config);
     Ok(())
 }
