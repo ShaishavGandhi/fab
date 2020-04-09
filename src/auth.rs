@@ -1,7 +1,7 @@
 use crate::structs::{FabConfig, WhoAmIResponse};
 use crate::WHO_AM_I;
 use failure::Error;
-use reqwest::blocking::RequestBuilder;
+use reqwest::RequestBuilder;
 use serde::Deserialize;
 use std::fs::{read_to_string, File};
 use std::{fs, io};
@@ -46,12 +46,12 @@ pub fn init() -> Result<FabConfig, Error> {
 
 /// Function that will execute the network request provided by RequestBuilder and
 /// prompt for an API token if session is invalidated.
-pub fn send<T: serde::de::DeserializeOwned>(
+pub async fn send<T: serde::de::DeserializeOwned>(
     config: &FabConfig,
     request: RequestBuilder,
 ) -> Result<T, Error> {
     let request = request.try_clone().unwrap();
-    let response = request.send()?.json::<NetworkResponse<T>>()?;
+    let response = request.send().await?.json::<NetworkResponse<T>>().await?;
 
     if response.result.is_some() {
         return Result::Ok(response.result.unwrap());

@@ -4,11 +4,12 @@ use crate::NO_BORDER_PRESET;
 use clap::ArgMatches;
 use comfy_table::{Attribute, Cell, CellAlignment, ContentArrangement, Table};
 use failure::Error;
+use tokio::runtime::Runtime;
 
 const DIFFERENTIAL_SEARCH_URL: &str = "api/differential.revision.search";
 
 /// Get diffs that are authored by the user.
-pub fn get_authored_diffs(config: &FabConfig) -> Result<Vec<Revision>, Error> {
+pub async fn get_authored_diffs(config: &FabConfig) -> Result<Vec<Revision>, Error> {
     let json_body = json!({
         "queryKey": "authored",
         "api.token": config.api_token,
@@ -20,20 +21,19 @@ pub fn get_authored_diffs(config: &FabConfig) -> Result<Vec<Revision>, Error> {
         DIFFERENTIAL_SEARCH_URL.to_string()
     );
 
-    let result = auth::send::<RevisionData>(
-        config,
-        reqwest::blocking::Client::new().post(&url).form(&json_body),
-    )?
-    .data
-    .into_iter()
-    .filter(|rev| !rev.fields.status.closed)
-    .collect();
+    let result =
+        auth::send::<RevisionData>(config, reqwest::Client::new().post(&url).form(&json_body))
+            .await?
+            .data
+            .into_iter()
+            .filter(|rev| !rev.fields.status.closed)
+            .collect();
 
     Ok(result)
 }
 
 /// Get the diffs that needs review from the user.
-pub fn get_needs_review_diffs(config: &FabConfig) -> Result<Vec<Revision>, Error> {
+pub async fn get_needs_review_diffs(config: &FabConfig) -> Result<Vec<Revision>, Error> {
     let json_body = json!({
         "api.token": config.api_token,
         "constraints[reviewerPHIDs][0]": config.phid
@@ -41,14 +41,13 @@ pub fn get_needs_review_diffs(config: &FabConfig) -> Result<Vec<Revision>, Error
 
     let url = format!("{}{}", config.hosted_instance, DIFFERENTIAL_SEARCH_URL);
 
-    let result = auth::send::<RevisionData>(
-        config,
-        reqwest::blocking::Client::new().post(&url).form(&json_body),
-    )?
-    .data
-    .into_iter()
-    .filter(|rev| !rev.fields.status.closed)
-    .collect();
+    let result =
+        auth::send::<RevisionData>(config, reqwest::Client::new().post(&url).form(&json_body))
+            .await?
+            .data
+            .into_iter()
+            .filter(|rev| !rev.fields.status.closed)
+            .collect();
 
     Ok(result)
 }
@@ -80,16 +79,15 @@ pub fn process_diff_command(_matches: &ArgMatches, config: &FabConfig) -> Result
         return Ok(());
     }
 
-    let result = get_authored_diffs(config)?;
+    let result = Runtime::new()?.block_on(get_authored_diffs(config))?;
 
     render_diffs(config, &result);
     Ok(())
 }
 
 fn process_diffs_needs_review(config: &FabConfig) -> Result<(), Error> {
-    let revisions = get_needs_review_diffs(config)?;
+    let revisions = Runtime::new()?.block_on(get_needs_review_diffs(config))?;
 
-    // let revisions = response.data.iter().filter(|rev| !rev.fields.status.closed).collect();
     render_diffs(config, &revisions);
     Ok(())
 }

@@ -9,7 +9,7 @@ use serde_json::{Map, Value};
 
 const MANIPHEST_SEARCH: &str = "api/maniphest.search";
 
-pub fn get_tasks(
+pub async fn get_tasks(
     limit: &str,
     priorities: &[i32],
     config: &FabConfig,
@@ -35,8 +35,9 @@ pub fn get_tasks(
 
     let result = auth::send::<ManiphestSearchData>(
         config,
-        reqwest::blocking::Client::new().post(&url).form(&json_body),
-    )?;
+        reqwest::Client::new().post(&url).form(&json_body),
+    )
+    .await?;
 
     Ok(result.data)
 }
@@ -88,7 +89,7 @@ fn process_list_tasks(
         .map(|priority| Priority::get_value_for_name(priority).unwrap())
         .collect();
 
-    let tasks = get_tasks(limit, &priorities, config)?;
+    let tasks = tokio::runtime::Runtime::new()?.block_on(get_tasks(limit, &priorities, config))?;
     render_tasks(&tasks, config);
     Ok(())
 }
