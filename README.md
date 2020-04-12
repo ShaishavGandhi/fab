@@ -45,11 +45,22 @@ If the results become too overwhelming, you can limit them
 fab tasks --priority high normal --limit 10
 ```
 
-Finally, you can get a snapshot summary of what requires your attention
+You can get a snapshot summary of what requires your attention
 ```
 fab summary
 ```
 This will output the diffs that require your attention, your authored diffs and tasks you should be working on. 
+
+By default, the `summary` command will display high priority tasks. You can configure that and much more by doing
+```
+fab configure
+```
+which will take you to an interactive shell where you can select which priority tasks show up for your commands. 
+
+You can also reset to default preferences by doing
+```
+fab configure --reset
+```
 
 ## Contributing
 
