@@ -12,6 +12,7 @@ const MANIPHEST_SEARCH: &str = "api/maniphest.search";
 pub async fn get_tasks(
     limit: &str,
     priorities: &[i32],
+    order: &Option<String>,
     config: &FabConfig,
 ) -> Result<Vec<Maniphest>, Error> {
     let mut map = Map::new();
@@ -21,6 +22,9 @@ pub async fn get_tasks(
         Value::from(config.api_token.clone()),
     );
     map.insert("limit".to_string(), Value::from(limit));
+    if order.is_some() {
+        map.insert("order".to_string(), Value::from(order.as_ref().unwrap().as_str()));
+    }
 
     for (i, &priority) in priorities.iter().enumerate() {
         map.insert(
@@ -89,7 +93,9 @@ fn process_list_tasks(
         .map(|priority| Priority::get_value_for_name(priority).unwrap())
         .collect();
 
-    let tasks = tokio::runtime::Runtime::new()?.block_on(get_tasks(limit, &priorities, config))?;
+    let sort = matches.value_of("sort").map(|val| String::from(val));
+
+    let tasks = tokio::runtime::Runtime::new()?.block_on(get_tasks(limit, &priorities, &sort, config))?;
     render_tasks(&tasks, config);
     Ok(())
 }
