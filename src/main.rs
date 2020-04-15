@@ -67,6 +67,13 @@ fn main() -> Result<(), Error> {
                         .long("limit")
                         .help("limit results by a value")
                         .default_value("20"),
+                )
+                .arg(
+                    Arg::with_name("sort")
+                        .short('s')
+                        .long("sort")
+                        .help("Sort results")
+                        .possible_values(&["priority", "updated", "newest", "title"]),
                 ),
         )
         .subcommand(

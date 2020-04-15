@@ -24,6 +24,7 @@ pub fn process_summary(
         get_tasks(
             preferences.default_limit.to_string().as_str(),
             &priorities,
+            &preferences.default_sort,
             config,
         ),
     ));
