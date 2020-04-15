@@ -23,7 +23,7 @@ pub struct Preferences {
     pub summary_task_priority: Vec<String>,
     pub default_task_priority: Vec<String>,
     pub default_limit: i32,
-    pub default_sort: Option<String>
+    pub default_sort: Option<String>,
 }
 
 impl ::std::default::Default for Preferences {
@@ -32,7 +32,7 @@ impl ::std::default::Default for Preferences {
             summary_task_priority: vec![String::from("high"), String::from("needs-triage")],
             default_task_priority: vec![String::from("high")],
             default_limit: 20,
-            default_sort: None
+            default_sort: None,
         }
     }
 }
@@ -95,7 +95,7 @@ pub fn process_configuration(matches: &ArgMatches) -> Result<(), Error> {
         summary_task_priority: summary_priorities,
         default_task_priority: default_task_priorities,
         default_limit,
-        default_sort: None
+        default_sort: None,
     };
 
     set_preferences(&new_preferences)
@@ -106,7 +106,7 @@ fn reset_preferences() -> Result<(), Error> {
         default_limit: 20,
         default_task_priority: vec![String::from("high")],
         summary_task_priority: vec![String::from("high")],
-        default_sort: None
+        default_sort: None,
     };
 
     set_preferences(&default_preferences)

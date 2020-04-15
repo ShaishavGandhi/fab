@@ -23,7 +23,10 @@ pub async fn get_tasks(
     );
     map.insert("limit".to_string(), Value::from(limit));
     if order.is_some() {
-        map.insert("order".to_string(), Value::from(order.as_ref().unwrap().as_str()));
+        map.insert(
+            "order".to_string(),
+            Value::from(order.as_ref().unwrap().as_str()),
+        );
     }
 
     for (i, &priority) in priorities.iter().enumerate() {
@@ -93,9 +96,10 @@ fn process_list_tasks(
         .map(|priority| Priority::get_value_for_name(priority).unwrap())
         .collect();
 
-    let sort = matches.value_of("sort").map(|val| String::from(val));
+    let sort = matches.value_of("sort").map(String::from);
 
-    let tasks = tokio::runtime::Runtime::new()?.block_on(get_tasks(limit, &priorities, &sort, config))?;
+    let tasks =
+        tokio::runtime::Runtime::new()?.block_on(get_tasks(limit, &priorities, &sort, config))?;
     render_tasks(&tasks, config);
     Ok(())
 }
