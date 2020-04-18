@@ -18,6 +18,8 @@ pub fn process_summary(
         .map(|priority| Priority::get_value_for_name(&priority).unwrap())
         .collect();
 
+    let status = "open";
+
     let result = tokio::runtime::Runtime::new()?.block_on(join3(
         get_needs_review_diffs(config),
         get_authored_diffs(config),
@@ -25,6 +27,7 @@ pub fn process_summary(
             preferences.default_limit.to_string().as_str(),
             &priorities,
             &preferences.default_sort,
+            &status,
             config,
         ),
     ));

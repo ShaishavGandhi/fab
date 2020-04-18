@@ -13,6 +13,7 @@ pub async fn get_tasks(
     limit: &str,
     priorities: &[i32],
     order: &Option<String>,
+    status: &str,
     config: &FabConfig,
 ) -> Result<Vec<Maniphest>, Error> {
     let mut map = Map::new();
@@ -22,6 +23,7 @@ pub async fn get_tasks(
         Value::from(config.api_token.clone()),
     );
     map.insert("limit".to_string(), Value::from(limit));
+    map.insert("constraints[statuses][0]".to_string(), Value::from(status));
     if order.is_some() {
         map.insert(
             "order".to_string(),
@@ -98,8 +100,15 @@ fn process_list_tasks(
 
     let sort = matches.value_of("sort").map(String::from);
 
-    let tasks =
-        tokio::runtime::Runtime::new()?.block_on(get_tasks(limit, &priorities, &sort, config))?;
+    let status = matches.value_of("status").unwrap();
+
+    let tasks = tokio::runtime::Runtime::new()?.block_on(get_tasks(
+        limit,
+        &priorities,
+        &sort,
+        &status,
+        config,
+    ))?;
     render_tasks(&tasks, config);
     Ok(())
 }
@@ -123,7 +132,11 @@ impl Maniphest {
     fn get_background(&self) -> Color {
         let priority = &self.fields.priority.value;
         match priority {
-            100 => Color::Red,
+            100 => Color::Rgb {
+                r: 255,
+                g: 182,
+                b: 193,
+            },
             90 => Color::Magenta,
             80 => Color::DarkRed,
             50 => Color::DarkYellow,
@@ -136,7 +149,7 @@ impl Maniphest {
     fn get_foreground(&self) -> Color {
         let priority = &self.fields.priority.value;
         match priority {
-            100 => Color::White,
+            100 => Color::Black,
             90 => Color::White,
             80 => Color::White,
             50 => Color::Black,
@@ -240,8 +253,15 @@ mod tests {
             },
         };
 
-        assert_eq!(Color::Red, maniphest.get_background());
-        assert_eq!(Color::White, maniphest.get_foreground());
+        assert_eq!(
+            Color::Rgb {
+                r: 255,
+                g: 182,
+                b: 193
+            },
+            maniphest.get_background()
+        );
+        assert_eq!(Color::Black, maniphest.get_foreground());
     }
 
     #[test]

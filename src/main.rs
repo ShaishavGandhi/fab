@@ -74,6 +74,14 @@ fn main() -> Result<(), Error> {
                         .long("sort")
                         .help("Sort results")
                         .possible_values(&["priority", "updated", "newest", "title"]),
+                )
+                .arg(
+                    Arg::with_name("status")
+                        .short('S')
+                        .long("status")
+                        .help("Filter tasks by status")
+                        .possible_values(&["open", "resolved", "wontfix", "invalid", "duplicate"])
+                        .default_value("open"),
                 ),
         )
         .subcommand(
