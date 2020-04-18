@@ -102,8 +102,13 @@ fn process_list_tasks(
 
     let status = matches.value_of("status").unwrap();
 
-    let tasks =
-        tokio::runtime::Runtime::new()?.block_on(get_tasks(limit, &priorities, &sort, &status, config))?;
+    let tasks = tokio::runtime::Runtime::new()?.block_on(get_tasks(
+        limit,
+        &priorities,
+        &sort,
+        &status,
+        config,
+    ))?;
     render_tasks(&tasks, config);
     Ok(())
 }
@@ -130,7 +135,7 @@ impl Maniphest {
             100 => Color::Rgb {
                 r: 255,
                 g: 182,
-                b: 193
+                b: 193,
             },
             90 => Color::Magenta,
             80 => Color::DarkRed,
@@ -248,11 +253,14 @@ mod tests {
             },
         };
 
-        assert_eq!(Color::Rgb {
-            r: 255,
-            g: 182,
-            b: 193
-        }, maniphest.get_background());
+        assert_eq!(
+            Color::Rgb {
+                r: 255,
+                g: 182,
+                b: 193
+            },
+            maniphest.get_background()
+        );
         assert_eq!(Color::Black, maniphest.get_foreground());
     }
 
