@@ -16,7 +16,7 @@ const WHO_AM_I: &str = "api/user.whoami";
 const NO_BORDER_PRESET: &str = "                     ";
 
 fn main() -> Result<(), Error> {
-    let version = "0.2.0";
+    let version = "0.3.0";
     let preferences = preferences::get_preferences()?;
 
     let default_task_priority: &Vec<&str> = &preferences
