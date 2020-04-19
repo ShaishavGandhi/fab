@@ -1,7 +1,7 @@
 use clap::ArgMatches;
 use console::style;
 use dialoguer::theme::ColorfulTheme;
-use dialoguer::{Checkboxes, Input};
+use dialoguer::{Checkboxes, Input, Select};
 use failure::Error;
 use serde::{Deserialize, Serialize};
 use std::io;
@@ -23,7 +23,7 @@ pub struct Preferences {
     pub summary_task_priority: Vec<String>,
     pub default_task_priority: Vec<String>,
     pub default_limit: i32,
-    pub default_sort: Option<String>,
+    pub default_sort: String,
 }
 
 impl ::std::default::Default for Preferences {
@@ -32,7 +32,7 @@ impl ::std::default::Default for Preferences {
             summary_task_priority: vec![String::from("high"), String::from("needs-triage")],
             default_task_priority: vec![String::from("high")],
             default_limit: 20,
-            default_sort: None,
+            default_sort: "updated".to_string(),
         }
     }
 }
@@ -91,11 +91,26 @@ pub fn process_configuration(matches: &ArgMatches) -> Result<(), Error> {
         .with_initial_text(&current_preferences.default_limit.to_string())
         .interact()?;
 
+    println!(
+        "{}",
+        style("Choose a default sorting order for your tasks")
+            .bold()
+            .underlined()
+    );
+    println!("(Press space to select a priority)");
+
+    let sort_values = vec!["priority", "updated", "newest", "title"];
+    let default_sort = Select::with_theme(&ColorfulTheme::default())
+        .items(&sort_values)
+        .interact()?;
+
+    let default_sort = sort_values[default_sort];
+
     let new_preferences = Preferences {
         summary_task_priority: summary_priorities,
         default_task_priority: default_task_priorities,
         default_limit,
-        default_sort: None,
+        default_sort: default_sort.to_string(),
     };
 
     set_preferences(&new_preferences)
@@ -106,7 +121,7 @@ fn reset_preferences() -> Result<(), Error> {
         default_limit: 20,
         default_task_priority: vec![String::from("high")],
         summary_task_priority: vec![String::from("high")],
-        default_sort: None,
+        default_sort: "updated".to_string(),
     };
 
     set_preferences(&default_preferences)

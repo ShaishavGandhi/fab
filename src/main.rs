@@ -25,6 +25,8 @@ fn main() -> Result<(), Error> {
         .map(std::ops::Deref::deref)
         .collect();
 
+    let default_sort = &preferences.default_sort;
+
     let matches = App::new("Fab")
         .author("Shaishav <shaishavgandhi05@gmail.com>")
         .version(version)
@@ -66,14 +68,15 @@ fn main() -> Result<(), Error> {
                         .short('l')
                         .long("limit")
                         .help("limit results by a value")
-                        .default_value("20"),
+                        .default_value(&format!("{}", &preferences.default_limit)),
                 )
                 .arg(
                     Arg::with_name("sort")
                         .short('s')
                         .long("sort")
                         .help("Sort results")
-                        .possible_values(&["priority", "updated", "newest", "title"]),
+                        .possible_values(&["priority", "updated", "newest", "title"])
+                        .default_value(default_sort),
                 )
                 .arg(
                     Arg::with_name("status")
