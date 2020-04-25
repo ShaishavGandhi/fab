@@ -22,7 +22,7 @@ pub fn set_preferences(preferences: &Preferences) -> Result<(), Error> {
 pub struct Preferences {
     pub summary_task_priority: Vec<String>,
     pub default_task_priority: Vec<String>,
-    pub default_limit: i32,
+    pub default_limit: String,
     pub default_sort: String,
 }
 
@@ -31,7 +31,7 @@ impl ::std::default::Default for Preferences {
         Self {
             summary_task_priority: vec![String::from("high"), String::from("needs-triage")],
             default_task_priority: vec![String::from("high")],
-            default_limit: 20,
+            default_limit: "20".to_string(),
             default_sort: "updated".to_string(),
         }
     }
@@ -88,7 +88,7 @@ pub fn process_configuration(matches: &ArgMatches) -> Result<(), Error> {
     );
 
     let default_limit = Input::with_theme(&ColorfulTheme::default())
-        .with_initial_text(&current_preferences.default_limit.to_string())
+        .with_initial_text(&current_preferences.default_limit.as_str())
         .interact()?;
 
     println!(
@@ -118,7 +118,7 @@ pub fn process_configuration(matches: &ArgMatches) -> Result<(), Error> {
 
 fn reset_preferences() -> Result<(), Error> {
     let default_preferences = Preferences {
-        default_limit: 20,
+        default_limit: "20".to_string(),
         default_task_priority: vec![String::from("high")],
         summary_task_priority: vec![String::from("high")],
         default_sort: "updated".to_string(),
@@ -141,11 +141,11 @@ fn get_chosen_priorities(
         .items_checked(&checked_priorities)
         .interact()?;
 
-    let mut chosen_priorites: Vec<String> = Vec::with_capacity(result.len());
+    let mut chosen_priorities: Vec<String> = Vec::with_capacity(result.len());
 
     for i in result {
-        chosen_priorites.push(possible_priorities[i].to_string())
+        chosen_priorities.push(possible_priorities[i].to_string())
     }
 
-    Ok(chosen_priorites)
+    Ok(chosen_priorities)
 }
