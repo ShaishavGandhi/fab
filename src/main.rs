@@ -1,10 +1,12 @@
 #[macro_use]
 extern crate serde_json;
 
-use clap;
-use clap::{App, Arg};
+use clap_generate::generate;
+use clap_generate::generators::{Bash, Elvish, Fish, PowerShell, Zsh};
 use failure::Error;
+use std::io;
 mod auth;
+mod cli;
 mod diffs;
 mod preferences;
 mod structs;
@@ -16,96 +18,10 @@ const WHO_AM_I: &str = "api/user.whoami";
 const NO_BORDER_PRESET: &str = "                     ";
 
 fn main() -> Result<(), Error> {
-    let version = "0.3.0";
     let preferences = preferences::get_preferences()?;
 
-    let default_task_priority: &Vec<&str> = &preferences
-        .default_task_priority
-        .iter()
-        .map(std::ops::Deref::deref)
-        .collect();
-
-    let default_sort = &preferences.default_sort;
-
-    let matches = App::new("Fab")
-        .author("Shaishav <shaishavgandhi05@gmail.com>")
-        .version(version)
-        .subcommand(
-            App::new("diffs")
-                .version(version)
-                .author("Shaishav <shaishavgandhi05@gmail.com>")
-                .about("Commands related to your differential revisions")
-                .arg(
-                    Arg::with_name("needs-review")
-                        .short('n')
-                        .long("needs-review")
-                        .help("Show diffs that need your review"),
-                ),
-        )
-        .subcommand(
-            App::new("tasks")
-                .about("Commands related to maniphest tasks")
-                .version(version)
-                .author("Shaishav <shaishavgandhi05@gmail.com>")
-                .arg(
-                    Arg::with_name("priority")
-                        .short('p')
-                        .long("priority")
-                        .possible_values(&[
-                            "unbreak-now",
-                            "needs-triage",
-                            "high",
-                            "normal",
-                            "low",
-                            "wishlist",
-                        ])
-                        .help("Specify the priority of the task")
-                        .default_values(default_task_priority)
-                        .multiple(true),
-                )
-                .arg(
-                    Arg::with_name("limit")
-                        .short('l')
-                        .long("limit")
-                        .help("limit results by a value")
-                        .default_value(&format!("{}", &preferences.default_limit)),
-                )
-                .arg(
-                    Arg::with_name("sort")
-                        .short('s')
-                        .long("sort")
-                        .help("Sort results")
-                        .possible_values(&["priority", "updated", "newest", "title"])
-                        .default_value(default_sort),
-                )
-                .arg(
-                    Arg::with_name("status")
-                        .short('S')
-                        .long("status")
-                        .help("Filter tasks by status")
-                        .possible_values(&["open", "resolved", "wontfix", "invalid", "duplicate"])
-                        .default_value("open"),
-                ),
-        )
-        .subcommand(
-            App::new("summary")
-                .about("Gives a snapshot of what is relevant to you in the moment")
-                .version(version)
-                .author("Shaishav <shaishavgandhi05@gmail.com>"),
-        )
-        .subcommand(
-            App::new("configure")
-                .about("Configure settings")
-                .arg(
-                    Arg::with_name("reset")
-                        .short('r')
-                        .long("reset")
-                        .help("Reset preferences to their default value"),
-                )
-                .version(version)
-                .author("Shaishav <shaishavgandhi05@gmail.com>"),
-        )
-        .get_matches();
+    let app = cli::build_cli(&preferences);
+    let matches = &app.get_matches();
 
     let config = auth::init()?;
 
@@ -117,6 +33,16 @@ fn main() -> Result<(), Error> {
         summary::process_summary(matches, &config, &preferences)?;
     } else if let Some(matches) = matches.subcommand_matches("configure") {
         preferences::process_configuration(matches)?;
+    } else if let Some(_matches) = matches.subcommand_matches("generate-bash-completions") {
+        generate::<Bash, _>(&mut cli::build_cli(&preferences), "fab", &mut io::stdout());
+    } else if let Some(_matches) = matches.subcommand_matches("generate-zsh-completions") {
+        generate::<Zsh, _>(&mut cli::build_cli(&preferences), "fab", &mut io::stdout());
+    } else if let Some(_matches) = matches.subcommand_matches("generate-fish-completions") {
+        generate::<Fish, _>(&mut cli::build_cli(&preferences), "fab", &mut io::stdout());
+    } else if let Some(_matches) = matches.subcommand_matches("generate-elvish-completions") {
+        generate::<Elvish, _>(&mut cli::build_cli(&preferences), "fab", &mut io::stdout());
+    } else if let Some(_matches) = matches.subcommand_matches("generate-powershell-completions") {
+        generate::<PowerShell, _>(&mut cli::build_cli(&preferences), "fab", &mut io::stdout());
     }
     Ok(())
 }

@@ -81,7 +81,7 @@ fn process_list_tasks(
     config: &FabConfig,
     preferences: &Preferences,
 ) -> Result<(), Error> {
-    let pref_limit: &str = &preferences.default_limit.to_string();
+    let pref_limit = preferences.default_limit.as_str();
     let limit = matches.value_of("limit").unwrap_or(pref_limit);
 
     let priorities: Vec<_> = matches.values_of("priority")

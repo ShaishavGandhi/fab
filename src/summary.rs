@@ -24,7 +24,7 @@ pub fn process_summary(
         get_needs_review_diffs(config),
         get_authored_diffs(config),
         get_tasks(
-            preferences.default_limit.to_string().as_str(),
+            preferences.default_limit.as_str(),
             &priorities,
             &preferences.default_sort,
             &status,
