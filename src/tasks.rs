@@ -12,7 +12,7 @@ const MANIPHEST_SEARCH: &str = "api/maniphest.search";
 pub async fn get_tasks(
     limit: &str,
     priorities: &[i32],
-    order: &String,
+    order: &str,
     status: &str,
     config: &FabConfig,
 ) -> Result<Vec<Maniphest>, Error> {
@@ -24,7 +24,7 @@ pub async fn get_tasks(
     );
     map.insert("limit".to_string(), Value::from(limit));
     map.insert("constraints[statuses][0]".to_string(), Value::from(status));
-    map.insert("order".to_string(), Value::from(order.as_str()));
+    map.insert("order".to_string(), Value::from(order));
 
     for (i, &priority) in priorities.iter().enumerate() {
         map.insert(

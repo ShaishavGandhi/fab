@@ -1,6 +1,7 @@
 use crate::preferences::Preferences;
 use clap::{App, Arg};
 
+/// Builds the App with commands and defaults.
 pub fn build_cli(preferences: &Preferences) -> App {
     let version = "0.3.0";
 
@@ -13,7 +14,7 @@ pub fn build_cli(preferences: &Preferences) -> App {
     let default_limit = preferences.default_limit.as_str();
     let default_sort = preferences.default_sort.as_ref();
 
-    return App::new("Fab")
+    App::new("Fab")
         .author("Shaishav <shaishavgandhi05@gmail.com>")
         .version(version)
         .subcommand(
@@ -103,5 +104,5 @@ pub fn build_cli(preferences: &Preferences) -> App {
                 .about("Generate the bash completion files for fab")
                 .version(version)
                 .author("Shaishav <shaishavgandhi05@gmail.com>"),
-        );
+        )
 }
