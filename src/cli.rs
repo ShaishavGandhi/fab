@@ -1,7 +1,7 @@
 use crate::preferences::Preferences;
 use clap::{App, Arg};
 
-pub const VERSION: &str = "0.4.0";
+pub const VERSION: &str = "0.4.1";
 
 /// Builds the App with commands and defaults.
 pub fn build_cli(preferences: &Preferences) -> App {
