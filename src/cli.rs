@@ -3,7 +3,7 @@ use clap::{App, Arg};
 
 /// Builds the App with commands and defaults.
 pub fn build_cli(preferences: &Preferences) -> App {
-    let version = "0.3.0";
+    let version = "0.4.0";
 
     let default_task_priority: &Vec<&str> = &preferences
         .default_task_priority
