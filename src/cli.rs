@@ -1,7 +1,7 @@
 use crate::preferences::Preferences;
 use clap::{App, Arg};
 
-pub const VERSION: &str = "0.4.1";
+pub const VERSION: &str = "0.4.2";
 
 /// Builds the App with commands and defaults.
 pub fn build_cli(preferences: &Preferences) -> App {
@@ -94,15 +94,17 @@ pub fn build_cli(preferences: &Preferences) -> App {
                 .author("Shaishav <shaishavgandhi05@gmail.com>"),
         )
         .subcommand(
-            App::new("autocomplete")
-                .about("Add autocomplete suggestions for vim")
-                .version(VERSION)
-                .author("Shaishav <shaishavgandhi05@gmail.com>"),
-        )
-        .subcommand(
-            App::new("generate-bash-completions")
+            App::new("generate-shell-completions")
                 .about("Generate the bash completion files for fab")
                 .version(VERSION)
+                .arg(
+                    Arg::with_name("shell")
+                        .short('s')
+                        .long("shell")
+                        .required(true)
+                        .help("Pass the shell for which you want completions")
+                        .possible_values(&["bash", "zsh", "fish", "elvish", "powershell"]),
+                )
                 .author("Shaishav <shaishavgandhi05@gmail.com>"),
         )
 }
