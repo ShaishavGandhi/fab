@@ -1,11 +1,11 @@
 #[macro_use]
 extern crate serde_json;
 
+use crate::preferences::Preferences;
 use clap_generate::generate;
 use clap_generate::generators::{Bash, Elvish, Fish, PowerShell, Zsh};
 use failure::Error;
 use std::io;
-use crate::preferences::Preferences;
 mod auth;
 mod cli;
 mod diffs;
@@ -61,7 +61,7 @@ fn migrate_preferences(preferences: Preferences) -> Result<Preferences, failure:
         default_limit: preferences.default_limit,
         default_sort: preferences.default_sort,
         default_task_priority: preferences.default_task_priority,
-        summary_task_priority: preferences.summary_task_priority
+        summary_task_priority: preferences.summary_task_priority,
     };
     preferences::set_preferences(&preferences)?;
     Ok(preferences)
