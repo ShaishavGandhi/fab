@@ -22,8 +22,14 @@ pub fn set_preferences(preferences: &Preferences) -> Result<(), Error> {
 pub struct Preferences {
     pub summary_task_priority: Vec<String>,
     pub default_task_priority: Vec<String>,
-    pub default_limit: String,
+    pub default_limit: i32,
     pub default_sort: String,
+    #[serde(default = "default_limit")]
+    pub default_limit_str: String,
+}
+
+fn default_limit() -> String {
+    String::from("20")
 }
 
 impl ::std::default::Default for Preferences {
@@ -31,7 +37,8 @@ impl ::std::default::Default for Preferences {
         Self {
             summary_task_priority: vec![String::from("high"), String::from("needs-triage")],
             default_task_priority: vec![String::from("high")],
-            default_limit: "20".to_string(),
+            default_limit: 20,
+            default_limit_str: "20".to_string(),
             default_sort: "updated".to_string(),
         }
     }
@@ -88,7 +95,7 @@ pub fn process_configuration(matches: &ArgMatches) -> Result<(), Error> {
     );
 
     let default_limit = Input::with_theme(&ColorfulTheme::default())
-        .with_initial_text(&current_preferences.default_limit.as_str())
+        .with_initial_text(&current_preferences.default_limit_str.as_str())
         .interact()?;
 
     println!(
@@ -110,6 +117,7 @@ pub fn process_configuration(matches: &ArgMatches) -> Result<(), Error> {
         summary_task_priority: summary_priorities,
         default_task_priority: default_task_priorities,
         default_limit,
+        default_limit_str: format!("{}", default_limit),
         default_sort: default_sort.to_string(),
     };
 
@@ -118,7 +126,8 @@ pub fn process_configuration(matches: &ArgMatches) -> Result<(), Error> {
 
 fn reset_preferences() -> Result<(), Error> {
     let default_preferences = Preferences {
-        default_limit: "20".to_string(),
+        default_limit: 20,
+        default_limit_str: "20".to_string(),
         default_task_priority: vec![String::from("high")],
         summary_task_priority: vec![String::from("high")],
         default_sort: "updated".to_string(),
