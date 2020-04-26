@@ -1,25 +1,25 @@
 use crate::preferences::Preferences;
 use clap::{App, Arg};
 
+pub const VERSION: &str = "0.4.0";
+
 /// Builds the App with commands and defaults.
 pub fn build_cli(preferences: &Preferences) -> App {
-    let version = "0.4.0";
-
     let default_task_priority: &Vec<&str> = &preferences
         .default_task_priority
         .iter()
         .map(std::ops::Deref::deref)
         .collect();
 
-    let default_limit = preferences.default_limit.as_str();
+    let default_limit = preferences.default_limit_str.as_str();
     let default_sort = preferences.default_sort.as_ref();
 
     App::new("Fab")
         .author("Shaishav <shaishavgandhi05@gmail.com>")
-        .version(version)
+        .version(VERSION)
         .subcommand(
             App::new("diffs")
-                .version(version)
+                .version(VERSION)
                 .author("Shaishav <shaishavgandhi05@gmail.com>")
                 .about("Commands related to your differential revisions")
                 .arg(
@@ -32,7 +32,7 @@ pub fn build_cli(preferences: &Preferences) -> App {
         .subcommand(
             App::new("tasks")
                 .about("Commands related to maniphest tasks")
-                .version(version)
+                .version(VERSION)
                 .author("Shaishav <shaishavgandhi05@gmail.com>")
                 .arg(
                     Arg::with_name("priority")
@@ -78,7 +78,7 @@ pub fn build_cli(preferences: &Preferences) -> App {
         .subcommand(
             App::new("summary")
                 .about("Gives a snapshot of what is relevant to you in the moment")
-                .version(version)
+                .version(VERSION)
                 .author("Shaishav <shaishavgandhi05@gmail.com>"),
         )
         .subcommand(
@@ -90,19 +90,19 @@ pub fn build_cli(preferences: &Preferences) -> App {
                         .long("reset")
                         .help("Reset preferences to their default value"),
                 )
-                .version(version)
+                .version(VERSION)
                 .author("Shaishav <shaishavgandhi05@gmail.com>"),
         )
         .subcommand(
             App::new("autocomplete")
                 .about("Add autocomplete suggestions for vim")
-                .version(version)
+                .version(VERSION)
                 .author("Shaishav <shaishavgandhi05@gmail.com>"),
         )
         .subcommand(
             App::new("generate-bash-completions")
                 .about("Generate the bash completion files for fab")
-                .version(version)
+                .version(VERSION)
                 .author("Shaishav <shaishavgandhi05@gmail.com>"),
         )
 }
