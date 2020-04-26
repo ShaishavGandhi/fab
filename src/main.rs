@@ -37,16 +37,31 @@ fn main() -> Result<(), Error> {
         summary::process_summary(matches, &config, &preferences)?;
     } else if let Some(matches) = matches.subcommand_matches("configure") {
         preferences::process_configuration(matches)?;
-    } else if let Some(_matches) = matches.subcommand_matches("generate-bash-completions") {
-        generate::<Bash, _>(&mut cli::build_cli(&preferences), "fab", &mut io::stdout());
-    } else if let Some(_matches) = matches.subcommand_matches("generate-zsh-completions") {
-        generate::<Zsh, _>(&mut cli::build_cli(&preferences), "fab", &mut io::stdout());
-    } else if let Some(_matches) = matches.subcommand_matches("generate-fish-completions") {
-        generate::<Fish, _>(&mut cli::build_cli(&preferences), "fab", &mut io::stdout());
-    } else if let Some(_matches) = matches.subcommand_matches("generate-elvish-completions") {
-        generate::<Elvish, _>(&mut cli::build_cli(&preferences), "fab", &mut io::stdout());
-    } else if let Some(_matches) = matches.subcommand_matches("generate-powershell-completions") {
-        generate::<PowerShell, _>(&mut cli::build_cli(&preferences), "fab", &mut io::stdout());
+    } else if let Some(matches) = matches.subcommand_matches("generate-shell-completions") {
+        let shell = matches
+            .value_of("shell")
+            .expect("No shell specified for generating completions");
+
+        match shell {
+            "bash" => {
+                generate::<Bash, _>(&mut cli::build_cli(&preferences), "fab", &mut io::stdout())
+            }
+            "zsh" => {
+                generate::<Zsh, _>(&mut cli::build_cli(&preferences), "fab", &mut io::stdout())
+            }
+            "fish" => {
+                generate::<Fish, _>(&mut cli::build_cli(&preferences), "fab", &mut io::stdout())
+            }
+            "elvish" => {
+                generate::<Elvish, _>(&mut cli::build_cli(&preferences), "fab", &mut io::stdout())
+            }
+            "powershell" => generate::<PowerShell, _>(
+                &mut cli::build_cli(&preferences),
+                "fab",
+                &mut io::stdout(),
+            ),
+            _ => return Err(failure::err_msg("No matching shell specified")),
+        }
     }
     Ok(())
 }

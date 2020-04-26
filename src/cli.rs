@@ -94,39 +94,17 @@ pub fn build_cli(preferences: &Preferences) -> App {
                 .author("Shaishav <shaishavgandhi05@gmail.com>"),
         )
         .subcommand(
-            App::new("autocomplete")
-                .about("Add autocomplete suggestions for vim")
-                .version(VERSION)
-                .author("Shaishav <shaishavgandhi05@gmail.com>"),
-        )
-        .subcommand(
-            App::new("generate-bash-completions")
+            App::new("generate-shell-completions")
                 .about("Generate the bash completion files for fab")
                 .version(VERSION)
-                .author("Shaishav <shaishavgandhi05@gmail.com>"),
-        )
-        .subcommand(
-            App::new("generate-zsh-completions")
-                .about("Generate the zsh completion files for fab")
-                .version(VERSION)
-                .author("Shaishav <shaishavgandhi05@gmail.com>"),
-        )
-        .subcommand(
-            App::new("generate-fish-completions")
-                .about("Generate the fish completion files for fab")
-                .version(VERSION)
-                .author("Shaishav <shaishavgandhi05@gmail.com>"),
-        )
-        .subcommand(
-            App::new("generate-elvish-completions")
-                .about("Generate the elvish completion files for fab")
-                .version(VERSION)
-                .author("Shaishav <shaishavgandhi05@gmail.com>"),
-        )
-        .subcommand(
-            App::new("generate-powershell-completions")
-                .about("Generate the powershell completion files for fab")
-                .version(VERSION)
+                .arg(
+                    Arg::with_name("shell")
+                        .short('s')
+                        .long("shell")
+                        .required(true)
+                        .help("Pass the shell for which you want completions")
+                        .possible_values(&["bash", "zsh", "fish", "elvish", "powershell"]),
+                )
                 .author("Shaishav <shaishavgandhi05@gmail.com>"),
         )
 }
