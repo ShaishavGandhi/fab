@@ -1,7 +1,7 @@
 use crate::preferences::Preferences;
 use clap::{App, Arg};
 
-pub const VERSION: &str = "0.4.1";
+pub const VERSION: &str = "0.4.2";
 
 /// Builds the App with commands and defaults.
 pub fn build_cli(preferences: &Preferences) -> App {
@@ -102,6 +102,30 @@ pub fn build_cli(preferences: &Preferences) -> App {
         .subcommand(
             App::new("generate-bash-completions")
                 .about("Generate the bash completion files for fab")
+                .version(VERSION)
+                .author("Shaishav <shaishavgandhi05@gmail.com>"),
+        )
+        .subcommand(
+            App::new("generate-zsh-completions")
+                .about("Generate the zsh completion files for fab")
+                .version(VERSION)
+                .author("Shaishav <shaishavgandhi05@gmail.com>"),
+        )
+        .subcommand(
+            App::new("generate-fish-completions")
+                .about("Generate the fish completion files for fab")
+                .version(VERSION)
+                .author("Shaishav <shaishavgandhi05@gmail.com>"),
+        )
+        .subcommand(
+            App::new("generate-elvish-completions")
+                .about("Generate the elvish completion files for fab")
+                .version(VERSION)
+                .author("Shaishav <shaishavgandhi05@gmail.com>"),
+        )
+        .subcommand(
+            App::new("generate-powershell-completions")
+                .about("Generate the powershell completion files for fab")
                 .version(VERSION)
                 .author("Shaishav <shaishavgandhi05@gmail.com>"),
         )
