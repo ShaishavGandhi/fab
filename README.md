@@ -11,9 +11,9 @@ brew install fab
 ```
 
 ### Initialization
-Get started by checking on your differentials
+Get started by getting a summary of what you should be focusing on.
 ```
-fab diffs
+fab summary
 ```
 When you execute this the first time, Fab will ask you for two main things. 
 1. The URL for where your Phabricator instance is hosted.
@@ -23,43 +23,71 @@ Once you have that, you're good to go!
 
 ## Usage
 
-You can check on your authored diffs.
+Fab aims to help you focus on the things that require your attention. You can get a quick overview of things that need your attention by doing:
+```
+fab summary
+```
+This will provide a list of diffs that require your review, your authored diffs and tasks that you should be working on.
+
+### Differentials
+
+You can check on your authored diffs:
 ```
 fab diffs
 ```
-You can also check on diffs that need your review
+
+You can also check on diffs that need your review:
 ```
 fab diffs --needs-review
 ```
+### Tasks
 
-You can check high priority tasks that are assigned to you
+You can check on high priority tasks that are assigned to you:
 ```
 fab tasks --priority high 
 ```
-You can also give multiple values for the priority
+
+You can also give multiple values for the priority:
 ```
 fab tasks --priority high normal
 ```
-If the results become too overwhelming, you can limit them
+
+If the results become too overwhelming, you can limit them:
 ```
 fab tasks --priority high normal --limit 10
 ```
 
-You can get a snapshot summary of what requires your attention
+Fab will show open tasks by default but you can toggle that behavior:
 ```
-fab summary
+fab tasks --status=resolved/wontfix/invalid/duplicate
 ```
-This will output the diffs that require your attention, your authored diffs and tasks you should be working on. 
 
-By default, the `summary` command will display high priority tasks. You can configure that and much more by doing
+You can also specify a sorting order:
+```
+fab tasks --sort=priority/updated/newest/title
+```
+
+### Configuration
+
+Everyone has different workflows. Fab aims to make most functionality configurable. Just type:
 ```
 fab configure
 ```
-which will take you to an interactive shell where you can select which priority tasks show up for your commands. 
+which will take you to an interactive shell where you can configure:
+* Priority of tasks that show up in `fab summary`
+* Default limits for results
+* Default sort order
 
 You can also reset to default preferences by doing
 ```
 fab configure --reset
+```
+
+### Shell Completion
+
+Fab will output shell completions scripts for your favorite shell that you can add to your rc files. 
+```
+fab generate-shell-completions --shell=zsh/bash/fish/elvish/powershell
 ```
 
 ## Contributing
