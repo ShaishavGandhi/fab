@@ -34,7 +34,9 @@ pub fn build_cli(preferences: &Preferences) -> App {
                         .long("author")
                         .required(false)
                         .takes_value(true)
-                        .help("Find diffs with given author name. This is the Phabricator username")
+                        .help(
+                            "Find diffs with given author name. This is the Phabricator username",
+                        ),
                 ),
         )
         .subcommand(
