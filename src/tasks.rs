@@ -1,9 +1,9 @@
 use crate::preferences::Preferences;
 use crate::structs::FabConfig;
 use crate::{auth, NO_BORDER_PRESET};
+use anyhow::{anyhow, Error};
 use clap::ArgMatches;
 use comfy_table::{Attribute, Cell, CellAlignment, Color, ContentArrangement, Table};
-use failure::Error;
 use serde::Deserialize;
 use serde_json::{Map, Value};
 
@@ -183,7 +183,7 @@ impl Priority {
             "normal" => Result::Ok(50),
             "low" => Result::Ok(25),
             "wishlist" => Result::Ok(0),
-            _ => Result::Err(failure::err_msg("Unknown value of priority")),
+            _ => Result::Err(anyhow!("Unknown value of priority")),
         }
     }
 }

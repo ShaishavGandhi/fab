@@ -1,6 +1,6 @@
 use crate::auth;
 use crate::structs::FabConfig;
-use failure::Error;
+use anyhow::Error;
 use serde::{Deserialize, Serialize};
 use serde_json::{Map, Value};
 

@@ -1,8 +1,8 @@
+use anyhow::Error;
 use clap::ArgMatches;
 use console::style;
 use dialoguer::theme::ColorfulTheme;
 use dialoguer::{Checkboxes, Input, Select};
-use failure::Error;
 use serde::{Deserialize, Serialize};
 use std::io;
 
