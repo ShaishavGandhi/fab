@@ -13,6 +13,7 @@ mod preferences;
 mod structs;
 mod summary;
 mod tasks;
+mod users;
 
 const WHO_AM_I: &str = "api/user.whoami";
 /// Preset for comfy-table so that it styles the table for no borders

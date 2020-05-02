@@ -27,6 +27,14 @@ pub fn build_cli(preferences: &Preferences) -> App {
                         .short('n')
                         .long("needs-review")
                         .help("Show diffs that need your review"),
+                )
+                .arg(
+                    Arg::with_name("author")
+                        .short('a')
+                        .long("author")
+                        .required(false)
+                        .takes_value(true)
+                        .help("Find diffs with given author name. This is the Phabricator username")
                 ),
         )
         .subcommand(
