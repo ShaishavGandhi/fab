@@ -2,9 +2,9 @@ use crate::diffs::{get_authored_diffs, get_needs_review_diffs, render_diffs};
 use crate::preferences::Preferences;
 use crate::structs::FabConfig;
 use crate::tasks::{get_tasks, render_tasks, Priority};
+use anyhow::Error;
 use clap::ArgMatches;
 use console::style;
-use failure::Error;
 use futures::future::join3;
 
 pub fn process_summary(

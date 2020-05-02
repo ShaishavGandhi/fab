@@ -2,9 +2,9 @@
 extern crate serde_json;
 
 use crate::preferences::Preferences;
+use anyhow::{anyhow, Error};
 use clap_generate::generate;
 use clap_generate::generators::{Bash, Elvish, Fish, PowerShell, Zsh};
-use failure::Error;
 use std::io;
 mod auth;
 mod cli;
@@ -61,7 +61,7 @@ fn main() -> Result<(), Error> {
                 "fab",
                 &mut io::stdout(),
             ),
-            _ => return Err(failure::err_msg("No matching shell specified")),
+            _ => return Err(anyhow!("No matching shell specified")),
         }
     }
     Ok(())
@@ -71,7 +71,7 @@ fn main() -> Result<(), Error> {
 ///
 /// It's important to remember to add any default values otherwise confy will blow
 /// up with a BadTomlError
-fn migrate_preferences(preferences: Preferences) -> Result<Preferences, failure::Error> {
+fn migrate_preferences(preferences: Preferences) -> Result<Preferences, Error> {
     let preferences = Preferences {
         default_limit_str: preferences.default_limit.to_string(),
         default_limit: preferences.default_limit,

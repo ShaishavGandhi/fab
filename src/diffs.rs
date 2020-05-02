@@ -1,9 +1,9 @@
 use crate::structs::{FabConfig, Revision, RevisionData};
 use crate::NO_BORDER_PRESET;
 use crate::{auth, users};
+use anyhow::{anyhow, Error};
 use clap::ArgMatches;
 use comfy_table::{Attribute, Cell, CellAlignment, ContentArrangement, Table};
-use failure::Error;
 use serde_json::{Map, Value};
 use tokio::runtime::Runtime;
 
@@ -36,7 +36,7 @@ pub async fn get_authored_diffs(config: &FabConfig) -> Result<Vec<Revision>, Err
 /// Get diffs authored by given author
 pub async fn get_diffs(config: &FabConfig, author: &Option<&str>) -> Result<Vec<Revision>, Error> {
     if author.is_none() {
-        return Err(failure::err_msg("No author specified"));
+        return Err(anyhow!("No author specified"));
     }
 
     let author = author.unwrap();

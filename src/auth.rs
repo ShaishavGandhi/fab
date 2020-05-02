@@ -1,6 +1,6 @@
 use crate::structs::{FabConfig, WhoAmIResponse};
 use crate::WHO_AM_I;
-use failure::Error;
+use anyhow::{anyhow, Error};
 use reqwest::RequestBuilder;
 use serde::Deserialize;
 use std::fs::{read_to_string, File};
@@ -76,9 +76,7 @@ pub async fn send<T: serde::de::DeserializeOwned>(
             }
         }
     }
-    Result::Err(failure::err_msg(
-        "Token regenerated. Please try the command again",
-    ))
+    Err(anyhow!("Token regenerated. Please try the command again",))
 }
 
 /// Prompts for a token and writes the token to the configuration file.
@@ -92,7 +90,7 @@ fn prompt_token(hosted_instance: &str) -> Result<String, Error> {
     api_token = api_token.trim().to_string();
 
     if api_token.is_empty() {
-        return Result::Err(failure::err_msg("API Token cannot be null or empty"));
+        return Result::Err(anyhow!("API Token cannot be null or empty"));
     }
 
     Result::Ok(api_token)
@@ -113,7 +111,7 @@ fn prompt_hosted_instance() -> Result<String, Error> {
 
     // Make sure hosted instance is present.
     if hosted_instance.is_empty() {
-        return Result::Err(failure::err_msg("Hosted instance cannot be empty"));
+        return Result::Err(anyhow!("Hosted instance cannot be empty"));
     }
 
     Ok(hosted_instance)
