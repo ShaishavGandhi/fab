@@ -1,9 +1,10 @@
-use crate::auth;
 use crate::structs::{FabConfig, Revision, RevisionData};
 use crate::NO_BORDER_PRESET;
+use crate::{auth, users};
 use clap::ArgMatches;
 use comfy_table::{Attribute, Cell, CellAlignment, ContentArrangement, Table};
 use failure::Error;
+use serde_json::{Map, Value};
 use tokio::runtime::Runtime;
 
 const DIFFERENTIAL_SEARCH_URL: &str = "api/differential.revision.search";
@@ -20,6 +21,45 @@ pub async fn get_authored_diffs(config: &FabConfig) -> Result<Vec<Revision>, Err
         &config.hosted_instance,
         DIFFERENTIAL_SEARCH_URL.to_string()
     );
+
+    let result =
+        auth::send::<RevisionData>(config, reqwest::Client::new().post(&url).form(&json_body))
+            .await?
+            .data
+            .into_iter()
+            .filter(|rev| !rev.fields.status.closed)
+            .collect();
+
+    Ok(result)
+}
+
+/// Get diffs authored by given author
+pub async fn get_diffs(config: &FabConfig, author: &Option<&str>) -> Result<Vec<Revision>, Error> {
+    if author.is_none() {
+        return Err(failure::err_msg("No author specified"));
+    }
+
+    let author = author.unwrap();
+
+    let user = users::get_user(&author, config).await?;
+
+    let url = format!(
+        "{}{}",
+        &config.hosted_instance,
+        DIFFERENTIAL_SEARCH_URL.to_string()
+    );
+
+    let mut map = Map::new();
+    map.insert(
+        "api.token".to_string(),
+        Value::from(config.api_token.clone()),
+    );
+    map.insert(
+        "constraints[authorPHIDs][0]".to_string(),
+        Value::from(user.phid.clone()),
+    );
+
+    let json_body = Value::Object(map);
 
     let result =
         auth::send::<RevisionData>(config, reqwest::Client::new().post(&url).form(&json_body))
@@ -78,6 +118,10 @@ pub fn process_diff_command(_matches: &ArgMatches, config: &FabConfig) -> Result
         process_diffs_needs_review(config)?;
         return Ok(());
     }
+    if _matches.is_present("author") {
+        process_authored_diffs(config, _matches.value_of("author"))?;
+        return Ok(());
+    }
 
     let result = Runtime::new()?.block_on(get_authored_diffs(config))?;
 
@@ -87,6 +131,13 @@ pub fn process_diff_command(_matches: &ArgMatches, config: &FabConfig) -> Result
 
 fn process_diffs_needs_review(config: &FabConfig) -> Result<(), Error> {
     let revisions = Runtime::new()?.block_on(get_needs_review_diffs(config))?;
+
+    render_diffs(config, &revisions);
+    Ok(())
+}
+
+fn process_authored_diffs(config: &FabConfig, author: Option<&str>) -> Result<(), Error> {
+    let revisions = Runtime::new()?.block_on(get_diffs(config, &author))?;
 
     render_diffs(config, &revisions);
     Ok(())
